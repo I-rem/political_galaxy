@@ -114,7 +114,8 @@ public class SpaceFPSController : MonoBehaviour
             if (Keyboard.current.shiftKey.isPressed) speedMultiplier = 3.5f;
         }
 
-        Vector3 moveInput = transform.right * moveX + transform.up * moveY + transform.forward * moveZ;
+        Transform camTransform = Camera.main != null ? Camera.main.transform : transform;
+        Vector3 moveInput = transform.right * moveX + transform.up * moveY + camTransform.forward * moveZ;
         if (moveInput.sqrMagnitude > 1f) moveInput.Normalize();
 
         currentVelocity += moveInput * (acceleration * speedMultiplier) * Time.deltaTime;

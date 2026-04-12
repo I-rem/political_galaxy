@@ -20,7 +20,16 @@ public class AudioManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            // DontDestroyOnLoad(gameObject); // Useful if we have multiple scenes, but okay if left out for single scene
+            
+            // Ensure there is an AudioListener in the scene to actually hear sounds
+            if (FindObjectOfType<AudioListener>() == null)
+            {
+                if (Camera.main != null) 
+                    Camera.main.gameObject.AddComponent<AudioListener>();
+                else 
+                    gameObject.AddComponent<AudioListener>();
+            }
+
             SetupAudioSources();
         }
         else
