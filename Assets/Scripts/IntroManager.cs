@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.UI;
 
 public class IntroManager : MonoBehaviour
 {
@@ -27,6 +29,13 @@ public class IntroManager : MonoBehaviour
 
     void CreateIntroCanvas()
     {
+        if (FindObjectOfType<EventSystem>() == null)
+        {
+            GameObject esObj = new GameObject("EventSystem");
+            esObj.AddComponent<EventSystem>();
+            esObj.AddComponent<InputSystemUIInputModule>();
+        }
+
         introCanvas = new GameObject("IntroCanvas");
         Canvas canvas = introCanvas.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
