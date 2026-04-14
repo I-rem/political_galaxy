@@ -50,16 +50,17 @@ public class PlanetGravity : MonoBehaviour
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         canvas.sortingOrder = 100;
         CanvasScaler cScaler = infoCanvas.AddComponent<CanvasScaler>();
-        cScaler.uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
+        cScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        cScaler.referenceResolution = new Vector2(1920, 1080);
         // GraphicRaycaster kaldırıldı (gereksiz, zaten Scene Space Overlay)
 
         GameObject panelObj = new GameObject("Panel");
         panelObj.transform.SetParent(infoCanvas.transform, false);
         Image bg = panelObj.AddComponent<Image>();
-        bg.color = new Color(0.02f, 0.02f, 0.02f, 0.95f);
+        bg.color = new Color(0.05f, 0.05f, 0.05f, 0.98f);
         RectTransform panelRect = panelObj.GetComponent<RectTransform>();
-        panelRect.anchorMin = new Vector2(0.2f, 0.2f);
-        panelRect.anchorMax = new Vector2(0.8f, 0.8f);
+        panelRect.anchorMin = new Vector2(0.15f, 0.15f);
+        panelRect.anchorMax = new Vector2(0.85f, 0.85f);
         panelRect.offsetMin = Vector2.zero;
         panelRect.offsetMax = Vector2.zero;
 
@@ -73,9 +74,9 @@ public class PlanetGravity : MonoBehaviour
         
         infoText.font = font;
         infoText.color = Color.white;
-        infoText.fontSize = 9; // Önceden 17'ydi, yarıya indirildi
+        infoText.fontSize = 28; // Increased for better readability
         infoText.lineSpacing = 1.3f;
-        infoText.alignment = TextAnchor.MiddleCenter; 
+        infoText.alignment = TextAnchor.MiddleCenter;
         
         RectTransform textRect = infoText.GetComponent<RectTransform>();
         textRect.anchorMin = new Vector2(0.05f, 0.05f);
@@ -91,13 +92,13 @@ public class PlanetGravity : MonoBehaviour
 
         string explanationText = GetExplanationForCategory(ViewData.CategoryName);
 
-        string description = $"<b><size=18><color=#ffffff>{ViewData.CategoryName}</color></size></b>\n\n" +
+        string description = $"<b><size=48><color=#ffffff>{ViewData.CategoryName}</color></size></b>\n\n" +
                              $"<b><color=#ffffff>Explanation:</color></b>\n" +
                              $"<color=#ffffff>{explanationText}</color>\n\n" +
                              $"<b><color=#ffffff>Keywords:</color></b>\n" +
                              $"<color=#ffffff>{string.Join(", ", uniqueKeywords)}</color>\n\n" +
                              $"<b><color=#ffffff>Gravity Mass (Tweets):</color></b> <color=#ffffff>{ViewData.TweetCount}</color>\n\n" +
-                             $"<i><color=#ffffff>(Click / Press E or ESC / Move away to exit)</color></i>";
+                             $"<i><color=#aaaaaa>(Click / Press E or ESC / Move away to exit)</color></i>";
 
         infoText.text = description;
         // SetActive(false) zaten metodun başında çağrılıyor - tekrar gerekmez

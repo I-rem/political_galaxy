@@ -42,12 +42,13 @@ public class BridgePlanetInfo : MonoBehaviour
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         canvas.sortingOrder = 100;
         CanvasScaler cs = infoCanvas.AddComponent<CanvasScaler>();
-        cs.uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
+        cs.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        cs.referenceResolution = new Vector2(1920, 1080);
 
         GameObject panelObj = new GameObject("Panel");
         panelObj.transform.SetParent(infoCanvas.transform, false);
         Image bg = panelObj.AddComponent<Image>();
-        bg.color = new Color(0.02f, 0.02f, 0.02f, 0.95f);
+        bg.color = new Color(0.05f, 0.05f, 0.05f, 0.98f);
         RectTransform panelRect = panelObj.GetComponent<RectTransform>();
         panelRect.anchorMin = new Vector2(0.15f, 0.15f);
         panelRect.anchorMax = new Vector2(0.85f, 0.85f);
@@ -60,7 +61,7 @@ public class BridgePlanetInfo : MonoBehaviour
         Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         t.font = font;
         t.color = Color.white;
-        t.fontSize = 16;
+        t.fontSize = 28;
         t.lineSpacing = 1.5f;
         t.alignment = TextAnchor.MiddleCenter;
 
@@ -71,7 +72,7 @@ public class BridgePlanetInfo : MonoBehaviour
         textRect.offsetMax = Vector2.zero;
 
         t.text =
-            "<b><size=32><color=#ffffff>The Bridge</color></size></b>\n\n" +
+            "<b><size=48><color=#ffffff>The Bridge</color></size></b>\n\n" +
             "<color=#ffffff>Congratulations!\n\n" +
             "You've witnessed the five main polarizing concepts\n" +
             "and learned what you shouldn't be.\n\n" +
