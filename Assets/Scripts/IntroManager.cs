@@ -51,7 +51,8 @@ public class IntroManager : MonoBehaviour
         GameObject panelObj = new GameObject("BackgroundPanel");
         panelObj.transform.SetParent(introCanvas.transform, false);
         Image bg = panelObj.AddComponent<Image>();
-        bg.color = new Color(0.05f, 0.05f, 0.1f, 1f); // Dark background
+        bg.color = new Color(0.02f, 0.05f, 0.08f, 0.9f); // Sleek semi-transparent dark space UI
+
         RectTransform panelRect = panelObj.GetComponent<RectTransform>();
         panelRect.anchorMin = Vector2.zero;
         panelRect.anchorMax = Vector2.one;
@@ -66,44 +67,73 @@ public class IntroManager : MonoBehaviour
         if(font == null) font = Resources.GetBuiltinResource<Font>("Arial.ttf");
         titleText.font = font;
         titleText.color = Color.white;
-        titleText.fontSize = 80;
+        titleText.fontSize = 90;
         titleText.alignment = TextAnchor.MiddleCenter;
-        titleText.text = "Political Galaxy";
+        titleText.supportRichText = true;
+        titleText.text = "<b><color=#7bb3ff>Political</color> Galaxy</b>";
+
+        UnityEngine.UI.Outline titleOutline = titleObj.AddComponent<UnityEngine.UI.Outline>();
+        titleOutline.effectColor = new Color(0f, 0f, 0f, 0.5f);
+        titleOutline.effectDistance = new Vector2(2, -2);
 
         RectTransform titleRect = titleObj.GetComponent<RectTransform>();
-        titleRect.anchorMin = new Vector2(0.5f, 0.65f);
-        titleRect.anchorMax = new Vector2(0.5f, 0.65f);
+        titleRect.anchorMin = new Vector2(0.5f, 0.75f);
+        titleRect.anchorMax = new Vector2(0.5f, 0.75f);
         titleRect.sizeDelta = new Vector2(1500, 200);
         titleRect.anchoredPosition = Vector2.zero;
         
-        // Instruction Text
-        GameObject instObj = new GameObject("InstructionText");
-        instObj.transform.SetParent(panelObj.transform, false);
-        Text instText = instObj.AddComponent<Text>();
-        instText.font = font;
-        instText.color = new Color(0.8f, 0.8f, 0.8f, 1f);
-        instText.fontSize = 32;
-        instText.alignment = TextAnchor.MiddleCenter;
-        instText.text = "Explore the echoes of political polarization.\nUse W,A,S,D to move. Mouse to look around.\nNavigate close to topics to uncover their perspectives.";
-        instText.lineSpacing = 1.25f;
+        // Mission Text
+        GameObject missionObj = new GameObject("MissionText");
+        missionObj.transform.SetParent(panelObj.transform, false);
+        Text missionText = missionObj.AddComponent<Text>();
+        missionText.font = font;
+        missionText.color = new Color(0.9f, 0.9f, 0.95f, 1f);
+        missionText.fontSize = 32;
+        missionText.alignment = TextAnchor.UpperCenter;
+        missionText.supportRichText = true;
+        missionText.text = "This interactive experience explores how algorithms create <b><color=#ff7b7b>echo chambers</color></b> and drive societal polarization.\n\n" + 
+                           "Each celestial body in this space embodies a specific extreme ideology,\npulling you into its ideological gravity well. " +
+                           "Navigate carefully to uncover these perspectives.";
+        missionText.lineSpacing = 1.3f;
 
-        RectTransform instRect = instObj.GetComponent<RectTransform>();
-        instRect.anchorMin = new Vector2(0.5f, 0.45f);
-        instRect.anchorMax = new Vector2(0.5f, 0.45f);
-        instRect.sizeDelta = new Vector2(1500, 300);
-        instRect.anchoredPosition = Vector2.zero;
+        RectTransform missionRect = missionObj.GetComponent<RectTransform>();
+        missionRect.anchorMin = new Vector2(0.5f, 0.55f);
+        missionRect.anchorMax = new Vector2(0.5f, 0.55f);
+        missionRect.sizeDelta = new Vector2(1600, 300);
+        missionRect.anchoredPosition = Vector2.zero;
+
+        // Controls Text
+        GameObject controlsObj = new GameObject("ControlsText");
+        controlsObj.transform.SetParent(panelObj.transform, false);
+        Text controlsText = controlsObj.AddComponent<Text>();
+        controlsText.font = font;
+        controlsText.color = new Color(0.7f, 0.8f, 0.9f, 1f); // slightly blueish gray
+        controlsText.fontSize = 28;
+        controlsText.alignment = TextAnchor.MiddleCenter;
+        controlsText.supportRichText = true;
+        controlsText.text = "<b>[ W A S D ]</b> Move Ship   |   <b>[ Mouse ]</b> Look Around   |   <b>[ Shift ]</b> Boost Speed   |   <b>[ E ] / [ Esc ]</b> Exit Orbit";
+        
+        RectTransform controlsRect = controlsObj.GetComponent<RectTransform>();
+        controlsRect.anchorMin = new Vector2(0.5f, 0.35f);
+        controlsRect.anchorMax = new Vector2(0.5f, 0.35f);
+        controlsRect.sizeDelta = new Vector2(1500, 100);
+        controlsRect.anchoredPosition = Vector2.zero;
 
         // Start Button Object
         GameObject btnObj = new GameObject("StartButton");
         btnObj.transform.SetParent(panelObj.transform, false);
         Image btnImage = btnObj.AddComponent<Image>();
-        btnImage.color = new Color(0.2f, 0.4f, 0.8f, 1f); // Blueish button
+        btnImage.color = new Color(0.1f, 0.25f, 0.45f, 0.9f); // Sleek darker blue
+        UnityEngine.UI.Outline btnOutline = btnObj.AddComponent<UnityEngine.UI.Outline>();
+        btnOutline.effectColor = new Color(0.4f, 0.7f, 1f, 0.5f); // glowing outline
+        btnOutline.effectDistance = new Vector2(1, -1);
+        
         Button btn = btnObj.AddComponent<Button>();
         
         RectTransform btnRect = btnObj.GetComponent<RectTransform>();
-        btnRect.anchorMin = new Vector2(0.5f, 0.25f);
-        btnRect.anchorMax = new Vector2(0.5f, 0.25f);
-        btnRect.sizeDelta = new Vector2(300, 90);
+        btnRect.anchorMin = new Vector2(0.5f, 0.15f);
+        btnRect.anchorMax = new Vector2(0.5f, 0.15f);
+        btnRect.sizeDelta = new Vector2(350, 80);
         btnRect.anchoredPosition = Vector2.zero;
 
         // Start Button Text
@@ -111,9 +141,9 @@ public class IntroManager : MonoBehaviour
         btnTextObj.transform.SetParent(btnObj.transform, false);
         Text btnText = btnTextObj.AddComponent<Text>();
         btnText.font = font;
-        btnText.text = "START";
-        btnText.color = Color.white;
-        btnText.fontSize = 35;
+        btnText.text = "<b>COMMENCE JOURNEY</b>";
+        btnText.color = new Color(0.9f, 0.95f, 1f, 1f);
+        btnText.fontSize = 28;
         btnText.alignment = TextAnchor.MiddleCenter;
         
         RectTransform btnTextRect = btnTextObj.GetComponent<RectTransform>();
