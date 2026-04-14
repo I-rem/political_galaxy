@@ -31,6 +31,11 @@ public class SpaceFPSController : MonoBehaviour
         CreateCrosshair();
     }
 
+    public void StopMovement()
+    {
+        currentVelocity = Vector3.zero;
+    }
+
     void CreateCrosshair()
     {
         crosshairCanvas = new GameObject("CrosshairCanvas");
@@ -101,7 +106,7 @@ public class SpaceFPSController : MonoBehaviour
         float moveY = 0f;
         float speedMultiplier = 1f;
 
-        if (Keyboard.current != null)
+        if (Cursor.lockState == CursorLockMode.Locked && Keyboard.current != null)
         {
             if (Keyboard.current.wKey.isPressed) moveZ += 1f;
             if (Keyboard.current.sKey.isPressed) moveZ -= 1f;

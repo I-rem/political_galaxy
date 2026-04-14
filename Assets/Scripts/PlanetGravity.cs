@@ -145,7 +145,7 @@ public class PlanetGravity : MonoBehaviour
                     cc.Move(direction * pullStrength * Time.deltaTime);
                 }
                 
-                if (isPlayerAtCore)
+                if (isPlayerAtCore && distance > surfaceDistance + 25f)
                 {
                     ClosePanelAndResume();
                     isPlayerAtCore = false;
@@ -166,6 +166,12 @@ public class PlanetGravity : MonoBehaviour
 
                     Cursor.lockState = CursorLockMode.None;
                     Cursor.visible = true;
+
+                    SpaceFPSController fps = other.GetComponent<SpaceFPSController>();
+                    if (fps != null)
+                    {
+                        fps.StopMovement();
+                    }
                 }
             }
         }
