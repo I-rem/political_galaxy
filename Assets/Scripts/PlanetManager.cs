@@ -495,15 +495,23 @@ public class PlanetManager : MonoBehaviour
                 wordObj.transform.position = position + Random.onUnitSphere * orbitRadius;
 
                 int count = viewData.KeywordFrequencies != null && viewData.KeywordFrequencies.ContainsKey(word) ? viewData.KeywordFrequencies[word] : 1;
-                float intensity = Mathf.Clamp(count, 1f, 20f) / 10f; // up to 2.0 multiplier
                 
-                Color kwdColor = pColor; 
-                Color glowingColor = new Color(kwdColor.r * (1f + intensity), kwdColor.g * (1f + intensity), kwdColor.b * (1f + intensity), Mathf.Min(1f, 0.6f + intensity * 0.2f));
+                // Map count (e.g. 1 to 20) to a 0-1 range
+                float t = Mathf.Clamp01((count - 1f) / 19f);
+                
+                // Color mapping: To make it physically "glow" in Unity, the RGB values must exceed 1.0 (HDR). 
+                // We multiply the peak common words by 5x to trigger Post-Processing Bloom!
+                float hdrMultiplier = 1f + (t * 4f); 
+                Color glowingColor = new Color(pColor.r * hdrMultiplier, pColor.g * hdrMultiplier, pColor.b * hdrMultiplier, 0.6f + t * 0.4f);
 
                 OrbitingKeyword ok = wordObj.AddComponent<OrbitingKeyword>();
                 ok.centerPoint = planetObj.transform;
                 ok.orbitSpeed = Random.Range(2f, 8f);
-                ok.SetupText(word, glowingColor, 90 + (int)(intensity * 20), 0.45f + (intensity * 0.2f));
+                
+                // Size mapping: Most words are 0.15f, highest are 0.6f. Font size stays static.
+                float cSize = Mathf.Lerp(0.15f, 0.6f, t);
+                
+                ok.SetupText(word, glowingColor, 90, cSize);
                 pg.OrbitingKeywords.Add(ok);
 
                 // Keyword → Portal listesine ekle (bridge geçişinde gizlenecek)
