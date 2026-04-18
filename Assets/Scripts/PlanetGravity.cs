@@ -35,15 +35,18 @@ public class PlanetGravity : MonoBehaviour
         return "A deep dive view mapping specific polarized perspectives inside social systems.";
     }
 
+    private Vector3 lastPosition;
+    private Vector3 positionDelta;
+
     void Start()
     {
+        lastPosition = transform.position;
         CreateCanvasWithFixedText();
     }
 
     void CreateCanvasWithFixedText()
     {
         infoCanvas = new GameObject("InfoCanvas_" + ViewData.CategoryName);
-        // HEMEN kapat — Image default beyaz rengiyle 1 kare önce görünmesin
         infoCanvas.SetActive(false);
 
         Canvas canvas = infoCanvas.AddComponent<Canvas>();
@@ -52,7 +55,6 @@ public class PlanetGravity : MonoBehaviour
         CanvasScaler cScaler = infoCanvas.AddComponent<CanvasScaler>();
         cScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         cScaler.referenceResolution = new Vector2(1920, 1080);
-        // GraphicRaycaster kaldırıldı (gereksiz, zaten Scene Space Overlay)
 
         GameObject panelObj = new GameObject("Panel");
         panelObj.transform.SetParent(infoCanvas.transform, false);
@@ -64,7 +66,6 @@ public class PlanetGravity : MonoBehaviour
         panelRect.offsetMin = Vector2.zero;
         panelRect.offsetMax = Vector2.zero;
 
-        // Kaydırma barı vb kaldırıldı. Sadece Text objesi eklendi.
         GameObject textObj = new GameObject("Text");
         textObj.transform.SetParent(panelObj.transform, false);
         infoText = textObj.AddComponent<Text>();
@@ -74,7 +75,7 @@ public class PlanetGravity : MonoBehaviour
         
         infoText.font = font;
         infoText.color = Color.white;
-        infoText.fontSize = 28; // Increased for better readability
+        infoText.fontSize = 28;
         infoText.lineSpacing = 1.3f;
         infoText.alignment = TextAnchor.MiddleCenter;
         
@@ -87,7 +88,7 @@ public class PlanetGravity : MonoBehaviour
         List<string> uniqueKeywords = new List<string>();
         foreach(string kw in ViewData.Keywords) {
             if(!uniqueKeywords.Contains(kw)) uniqueKeywords.Add(kw);
-            if(uniqueKeywords.Count >= 20) break; // Sığması için tasarruf
+            if(uniqueKeywords.Count >= 20) break;
         }
 
         string explanationText = GetExplanationForCategory(ViewData.CategoryName);
@@ -101,7 +102,6 @@ public class PlanetGravity : MonoBehaviour
                              $"<i><color=#aaaaaa>(Click / Press E or ESC / Move away to exit)</color></i>";
 
         infoText.text = description;
-        // SetActive(false) zaten metodun başında çağrılıyor - tekrar gerekmez
     }
 
     void Update()
@@ -118,6 +118,12 @@ public class PlanetGravity : MonoBehaviour
         }
     }
 
+    void FixedUpdate()
+    {
+        positionDelta = transform.position - lastPosition;
+        lastPosition = transform.position;
+    }
+
     private void ClosePanelAndResume()
     {
         infoCanvas.SetActive(false);
@@ -130,7 +136,6 @@ public class PlanetGravity : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             float distance = Vector3.Distance(transform.position, other.transform.position);
-            // Sıkışma hissi yaşanmaması için hitbox limiti büyütüldü
             float surfaceDistance = (transform.localScale.x / 2f) + 36f; 
 
             if (distance > surfaceDistance)
@@ -140,10 +145,11 @@ public class PlanetGravity : MonoBehaviour
                 if (cc != null)
                 {
                     float pullStrength = gravityForce * (1f - (distance / (GetComponent<SphereCollider>().radius * transform.localScale.x)));
-                    // Min çekim gücü (gravityForce'un %30'u) — böylece oyuncu her zaman çekimi hisseder
                     pullStrength = Mathf.Max(pullStrength, gravityForce * 0.3f);
                     pullStrength = Mathf.Clamp(pullStrength, 5f, gravityForce);
-                    cc.Move(direction * pullStrength * Time.deltaTime);
+                    
+                    // Match the planet's movement in space so we don't get left behind
+                    cc.Move((direction * pullStrength * Time.deltaTime) + positionDelta);
                 }
                 
                 if (isPlayerAtCore && distance > surfaceDistance + 25f)
@@ -173,6 +179,13 @@ public class PlanetGravity : MonoBehaviour
                     {
                         fps.StopMovement();
                     }
+                }
+                
+                // If they are locked at the core surface, they still need to move WITH the planet
+                CharacterController surfaceCc = other.GetComponent<CharacterController>();
+                if (surfaceCc != null)
+                {
+                    surfaceCc.Move(positionDelta);
                 }
             }
         }
