@@ -24,6 +24,42 @@ public class PlanetManager : MonoBehaviour
     // Portal
     private List<GameObject> allPolarizingObjects = new List<GameObject>();
     private bool portalSpawned = false;
+    private Dictionary<string, GameObject> themeCenters = new Dictionary<string, GameObject>();
+
+    private GameObject GetOrCreateThemeCenter(string themeName, Vector3 position)
+    {
+        if (themeCenters.ContainsKey(themeName))
+            return themeCenters[themeName];
+
+        GameObject themeObj = new GameObject("Theme_" + themeName);
+        themeObj.transform.position = position;
+        
+        GameObject textObj = new GameObject("ThemeText_" + themeName);
+        textObj.transform.position = position;
+        textObj.transform.SetParent(themeObj.transform);
+
+        TextMesh tm = textObj.AddComponent<TextMesh>();
+        tm.text = themeName;
+        tm.color = new Color(1f, 1f, 1f, 0.5f);
+        tm.fontSize = 120;
+        tm.characterSize = 0.5f;
+        tm.anchor = TextAnchor.MiddleCenter;
+        
+        Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        if(font == null) font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+        tm.font = font;
+        tm.GetComponent<Renderer>().material = tm.font.material;
+
+        textObj.AddComponent<BillboardText>();
+
+        ThemeRotator rotator = themeObj.AddComponent<ThemeRotator>();
+        rotator.rotationSpeed = Random.Range(15f, 30f) * (Random.value > 0.5f ? 1f : -1f);
+
+        themeCenters.Add(themeName, themeObj);
+        allPolarizingObjects.Add(themeObj);
+        
+        return themeObj;
+    }
 
     void Awake() { Instance = this; }
 
@@ -381,7 +417,6 @@ public class PlanetManager : MonoBehaviour
 
     void GeneratePlanets()
     {
-        float angleStep = 360f / dataLoader.PolarizingViews.Count;
         int index = 0;
 
         foreach (var kvp in dataLoader.PolarizingViews)
@@ -389,41 +424,48 @@ public class PlanetManager : MonoBehaviour
             PoliticalViewData viewData = kvp.Value;
 
             string catLower = viewData.CategoryName.ToLower();
-            float mapScale = 500f; 
-            Vector3 position = Vector3.zero;
+            string themeName = "Unknown Theme";
+            Vector3 themePosition = Vector3.zero;
 
-            if (catLower.Contains("progressive") || catLower.Contains("democratic socialism"))
-                position = new Vector3(-mapScale * 0.8f, -mapScale * 0.4f, 650f);
-            else if (catLower.Contains("identitarian") || catLower.Contains("social justice"))
-                position = new Vector3(-mapScale * 0.7f, mapScale * 0.6f, 650f);
-            else if (catLower.Contains("eco"))
-                position = new Vector3(-mapScale * 0.9f, mapScale * 0.9f, 650f);
-            else if (catLower.Contains("hyper-partisan") || catLower.Contains("populism"))
-                position = new Vector3(mapScale * 0.6f, -mapScale * 0.2f, 650f);
-            else if (catLower.Contains("ethno") || catLower.Contains("alt-right"))
-                position = new Vector3(mapScale * 0.9f, mapScale * 0.9f, 650f);
-            else if (catLower.Contains("religious"))
-                position = new Vector3(mapScale * 0.7f, mapScale * 0.7f, 650f);
-            else if (catLower.Contains("gender"))
-                position = new Vector3(mapScale * 0.5f, mapScale * 0.5f, 650f);
-            else if (catLower.Contains("libertarian") || catLower.Contains("free market"))
-                position = new Vector3(mapScale * 0.8f, -mapScale * 0.9f, 650f);
-            else
+            if (catLower.Contains("identitarian") || catLower.Contains("ethno") || catLower.Contains("alt-right") || catLower.Contains("social justice"))
             {
-                float angle = index * angleStep * Mathf.Deg2Rad;
-                float clusterRadius = 350f;
-                position = new Vector3(
-                    Mathf.Cos(angle) * clusterRadius,
-                    Mathf.Sin(angle) * clusterRadius * 0.5f,
-                    650f
-                );
+                themeName = "Racism & Identity";
+                themePosition = new Vector3(-400f, 300f, 650f);
+            }
+            else if (catLower.Contains("gender"))
+            {
+                themeName = "Sexism & Gender";
+                themePosition = new Vector3(400f, 300f, 650f);
+            }
+            else if (catLower.Contains("progressive") || catLower.Contains("libertarian") || catLower.Contains("populism") || catLower.Contains("hyper") || catLower.Contains("free market") || catLower.Contains("democratic socialism"))
+            {
+                themeName = "The Economy & Establishment";
+                themePosition = new Vector3(0f, -400f, 650f);
+            }
+            else if (catLower.Contains("eco") || catLower.Contains("religious"))
+            {
+                themeName = "Dogma & The Apocalypse";
+                themePosition = new Vector3(0f, 700f, 650f);
+            }
+            else 
+            {
+                themeName = "Fringe Outliers";
+                themePosition = new Vector3(800f, 0f, 650f);
             }
 
-            position += new Vector3(Random.Range(-100f, 100f), Random.Range(-100f, 100f), Random.Range(-50f, 50f));
+            GameObject themeCenter = GetOrCreateThemeCenter(themeName, themePosition);
 
             GameObject planetObj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             planetObj.name = "Planet_" + viewData.CategoryName;
-            planetObj.transform.position = position;
+            
+            planetObj.transform.SetParent(themeCenter.transform, false);
+
+            float orbitDistance = Random.Range(200f, 400f);
+            float angle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
+            planetObj.transform.localPosition = new Vector3(Mathf.Cos(angle) * orbitDistance, Random.Range(-50f, 50f), Mathf.Sin(angle) * orbitDistance);
+
+            // Get absolute position to use for keyword spawning later below
+            Vector3 position = planetObj.transform.position;
 
             float normalizedScale = Mathf.InverseLerp(minTweetCount, maxTweetCount, viewData.TweetCount);
             float exponentialScale = Mathf.Pow(normalizedScale, 1.5f);
@@ -516,6 +558,10 @@ public class PlanetManager : MonoBehaviour
 
                 GameObject wordObj = new GameObject("Keyword_" + word);
                 wordObj.transform.position = position + Random.onUnitSphere * orbitRadius;
+                
+                // Parent the keywords to the ThemeCenter so they move in the solar system,
+                // without inheriting the large scale of the actual planetObj.
+                wordObj.transform.SetParent(themeCenter.transform, true);
 
                 int count = viewData.KeywordFrequencies != null && viewData.KeywordFrequencies.ContainsKey(word) ? viewData.KeywordFrequencies[word] : 1;
                 
@@ -529,7 +575,7 @@ public class PlanetManager : MonoBehaviour
 
                 OrbitingKeyword ok = wordObj.AddComponent<OrbitingKeyword>();
                 ok.centerPoint = planetObj.transform;
-                ok.orbitSpeed = Random.Range(2f, 8f);
+                ok.orbitSpeed = Random.Range(15f, 40f);
                 
                 // Size mapping: Most words are 0.15f, highest are 0.6f. Font size stays static.
                 float cSize = Mathf.Lerp(0.15f, 0.6f, t);
