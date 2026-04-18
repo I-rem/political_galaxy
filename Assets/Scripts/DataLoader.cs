@@ -8,6 +8,7 @@ public class PoliticalViewData
     public string CategoryName;
     public int TweetCount;
     public List<string> Keywords;
+    public Dictionary<string, int> KeywordFrequencies;
     public string Explanation; // Yeni eklenen Sütun
     
     public PoliticalViewData(string name)
@@ -15,6 +16,7 @@ public class PoliticalViewData
         CategoryName = name;
         TweetCount = 0;
         Keywords = new List<string>();
+        KeywordFrequencies = new Dictionary<string, int>();
         Explanation = ""; // Default boş kalsın
     }
 }
@@ -90,6 +92,12 @@ public class DataLoader : MonoBehaviour
                     if (!string.IsNullOrEmpty(cleanedKwd))
                     {
                         viewData.Keywords.Add(cleanedKwd);
+                        
+                        if (!viewData.KeywordFrequencies.ContainsKey(cleanedKwd))
+                        {
+                            viewData.KeywordFrequencies[cleanedKwd] = 0;
+                        }
+                        viewData.KeywordFrequencies[cleanedKwd]++;
                     }
                 }
             }

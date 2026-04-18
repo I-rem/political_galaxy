@@ -361,6 +361,19 @@ public class PlanetManager : MonoBehaviour
     // ─────────────────────────────────────────────
     // POLARİZİNG GEZEGENLER
     // ─────────────────────────────────────────────
+    private Color GetPlanetColor(string category)
+    {
+        string catLower = category.ToLower();
+        if (catLower.Contains("religious")) return new Color(0.8f, 0.1f, 0.8f, 1f); // Purple
+        if (catLower.Contains("populism")) return new Color(0.9f, 0.6f, 0.1f, 1f); // Orange
+        if (catLower.Contains("gender")) return new Color(0.1f, 0.8f, 0.6f, 1f); // Teal
+        if (catLower.Contains("ethno")) return new Color(0.9f, 0.1f, 0.1f, 1f); // Red
+        if (catLower.Contains("eco")) return new Color(0.2f, 0.9f, 0.2f, 1f); // Green
+            
+        Random.InitState(category.GetHashCode());
+        return new Color(Random.Range(0.2f, 0.9f), Random.Range(0.2f, 0.9f), Random.Range(0.2f, 0.9f), 1f);
+    }
+
     void GeneratePlanets()
     {
         float angleStep = 360f / dataLoader.PolarizingViews.Count;
@@ -403,7 +416,7 @@ public class PlanetManager : MonoBehaviour
             main.simulationSpace = ParticleSystemSimulationSpace.World;
             main.scalingMode = ParticleSystemScalingMode.Hierarchy;
 
-            Color pColor = new Color(0.9f, 0.1f, 0.1f, 1f);
+            Color pColor = GetPlanetColor(viewData.CategoryName);
             main.startColor = pColor;
 
             var em = ps.emission;
@@ -439,7 +452,36 @@ public class PlanetManager : MonoBehaviour
             pg.PlanetPS = ps;
             pg.PlanetRenderer = planetObj.GetComponent<Renderer>();
 
+            // 3D Audio Setup
             float orbitRadius = Mathf.Lerp(minOrbitScale, maxOrbitScale, exponentialScale);
+
+            AudioSource source = planetObj.AddComponent<AudioSource>();
+            source.spatialBlend = 1f;
+            source.minDistance = 100f;
+            source.maxDistance = orbitRadius * 2.5f; // Ensures it fades out past orbit
+            source.rolloffMode = AudioRolloffMode.Logarithmic;
+            source.loop = true;
+            source.playOnAwake = true;
+            source.volume = 0.8f;
+            
+            // Mass inversely proportional to pitch. Heavier = deeper hum
+            source.pitch = Mathf.Lerp(1.5f, 0.4f, normalizedScale);
+            
+            if (AudioManager.Instance != null)
+            {
+                if (AudioManager.Instance.planetHumClip != null)
+                {
+                    source.clip = AudioManager.Instance.planetHumClip;
+                    source.Play();
+                }
+                else if (AudioManager.Instance.orbitEntryClip != null)
+                {
+                    // Fallback sound if missing hum clip
+                    source.clip = AudioManager.Instance.orbitEntryClip;
+                    source.Play();
+                }
+            }
+
             SphereCollider orbitCollider = planetObj.AddComponent<SphereCollider>();
             orbitCollider.isTrigger = true;
             orbitCollider.radius = orbitRadius / planetScale;
@@ -452,10 +494,16 @@ public class PlanetManager : MonoBehaviour
                 GameObject wordObj = new GameObject("Keyword_" + word);
                 wordObj.transform.position = position + Random.onUnitSphere * orbitRadius;
 
+                int count = viewData.KeywordFrequencies != null && viewData.KeywordFrequencies.ContainsKey(word) ? viewData.KeywordFrequencies[word] : 1;
+                float intensity = Mathf.Clamp(count, 1f, 20f) / 10f; // up to 2.0 multiplier
+                
+                Color kwdColor = pColor; 
+                Color glowingColor = new Color(kwdColor.r * (1f + intensity), kwdColor.g * (1f + intensity), kwdColor.b * (1f + intensity), Mathf.Min(1f, 0.6f + intensity * 0.2f));
+
                 OrbitingKeyword ok = wordObj.AddComponent<OrbitingKeyword>();
                 ok.centerPoint = planetObj.transform;
                 ok.orbitSpeed = Random.Range(2f, 8f);
-                ok.SetupText(word, new Color(1f, 0f, 0f, 0.8f));
+                ok.SetupText(word, glowingColor, 90 + (int)(intensity * 20), 0.45f + (intensity * 0.2f));
                 pg.OrbitingKeywords.Add(ok);
 
                 // Keyword → Portal listesine ekle (bridge geçişinde gizlenecek)
