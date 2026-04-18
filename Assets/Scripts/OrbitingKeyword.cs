@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class OrbitingKeyword : MonoBehaviour
 {
@@ -29,6 +30,7 @@ public class OrbitingKeyword : MonoBehaviour
 
         // Add a BoxCollider so the text can be clicked and dragged
         BoxCollider box = gameObject.AddComponent<BoxCollider>();
+        box.isTrigger = true; // Use trigger so it does not physically push the player
         // Approximate collider size based on text length
         float width = text.Length * characterSize * 1.8f;
         float height = characterSize * 5f;
@@ -47,7 +49,7 @@ public class OrbitingKeyword : MonoBehaviour
     void Update()
     {
         // Stop movement with Space key
-        bool isPaused = Input.GetKey(KeyCode.Space);
+        bool isPaused = Keyboard.current != null && Keyboard.current.spaceKey.isPressed;
 
         if (centerPoint != null && !isDragging && !isPaused)
         {
@@ -96,8 +98,8 @@ public class OrbitingKeyword : MonoBehaviour
 
     private Vector3 GetMouseWorldPos()
     {
-        Vector3 mousePoint = Input.mousePosition;
-        mousePoint.z = zDistance;
+        Vector2 mousePoint2D = Mouse.current != null ? Mouse.current.position.ReadValue() : Vector2.zero;
+        Vector3 mousePoint = new Vector3(mousePoint2D.x, mousePoint2D.y, zDistance);
         return Camera.main.ScreenToWorldPoint(mousePoint);
     }
 }
