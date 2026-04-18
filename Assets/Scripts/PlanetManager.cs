@@ -369,6 +369,11 @@ public class PlanetManager : MonoBehaviour
         if (catLower.Contains("gender")) return new Color(0.1f, 0.8f, 0.6f, 1f); // Teal
         if (catLower.Contains("ethno")) return new Color(0.9f, 0.1f, 0.1f, 1f); // Red
         if (catLower.Contains("eco")) return new Color(0.2f, 0.9f, 0.2f, 1f); // Green
+        
+        // New categories
+        if (catLower.Contains("progressive")) return new Color(0.1f, 0.4f, 0.9f, 1f); // Deep Blue
+        if (catLower.Contains("identitarian")) return new Color(0.9f, 0.3f, 0.6f, 1f); // Pink/Magenta
+        if (catLower.Contains("libertarian")) return new Color(0.9f, 0.9f, 0.1f, 1f); // Yellow
             
         Random.InitState(category.GetHashCode());
         return new Color(Random.Range(0.2f, 0.9f), Random.Range(0.2f, 0.9f), Random.Range(0.2f, 0.9f), 1f);
@@ -383,14 +388,38 @@ public class PlanetManager : MonoBehaviour
         {
             PoliticalViewData viewData = kvp.Value;
 
-            float angle = index * angleStep * Mathf.Deg2Rad;
-            float clusterRadius = 350f;
+            string catLower = viewData.CategoryName.ToLower();
+            float mapScale = 500f; 
+            Vector3 position = Vector3.zero;
 
-            Vector3 position = new Vector3(
-                Mathf.Cos(angle) * clusterRadius,
-                Random.Range(-150f, 150f) + Mathf.Sin(angle) * clusterRadius * 0.5f,
-                650f + Random.Range(-100f, 100f)
-            );
+            if (catLower.Contains("progressive") || catLower.Contains("democratic socialism"))
+                position = new Vector3(-mapScale * 0.8f, -mapScale * 0.4f, 650f);
+            else if (catLower.Contains("identitarian") || catLower.Contains("social justice"))
+                position = new Vector3(-mapScale * 0.7f, mapScale * 0.6f, 650f);
+            else if (catLower.Contains("eco"))
+                position = new Vector3(-mapScale * 0.9f, mapScale * 0.9f, 650f);
+            else if (catLower.Contains("hyper-partisan") || catLower.Contains("populism"))
+                position = new Vector3(mapScale * 0.6f, -mapScale * 0.2f, 650f);
+            else if (catLower.Contains("ethno") || catLower.Contains("alt-right"))
+                position = new Vector3(mapScale * 0.9f, mapScale * 0.9f, 650f);
+            else if (catLower.Contains("religious"))
+                position = new Vector3(mapScale * 0.7f, mapScale * 0.7f, 650f);
+            else if (catLower.Contains("gender"))
+                position = new Vector3(mapScale * 0.5f, mapScale * 0.5f, 650f);
+            else if (catLower.Contains("libertarian") || catLower.Contains("free market"))
+                position = new Vector3(mapScale * 0.8f, -mapScale * 0.9f, 650f);
+            else
+            {
+                float angle = index * angleStep * Mathf.Deg2Rad;
+                float clusterRadius = 350f;
+                position = new Vector3(
+                    Mathf.Cos(angle) * clusterRadius,
+                    Mathf.Sin(angle) * clusterRadius * 0.5f,
+                    650f
+                );
+            }
+
+            position += new Vector3(Random.Range(-100f, 100f), Random.Range(-100f, 100f), Random.Range(-50f, 50f));
 
             GameObject planetObj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             planetObj.name = "Planet_" + viewData.CategoryName;
@@ -469,14 +498,8 @@ public class PlanetManager : MonoBehaviour
             
             if (AudioManager.Instance != null)
             {
-                if (AudioManager.Instance.planetHumClip != null)
+                if (AudioManager.Instance.orbitEntryClip != null)
                 {
-                    source.clip = AudioManager.Instance.planetHumClip;
-                    source.Play();
-                }
-                else if (AudioManager.Instance.orbitEntryClip != null)
-                {
-                    // Fallback sound if missing hum clip
                     source.clip = AudioManager.Instance.orbitEntryClip;
                     source.Play();
                 }

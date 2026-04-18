@@ -11,8 +11,6 @@ public class AudioManager : MonoBehaviour
     public AudioClip uiClickClip;
     [Tooltip("Drag the sound for entering an orbit here.")]
     public AudioClip orbitEntryClip;
-    [Tooltip("Drag the base hum/drone sound for each planet here.")]
-    public AudioClip planetHumClip;
 
     private AudioSource bgmSource;
     private AudioSource sfxSource;
