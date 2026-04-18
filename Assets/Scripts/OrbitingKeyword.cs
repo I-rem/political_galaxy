@@ -6,6 +6,11 @@ public class OrbitingKeyword : MonoBehaviour
     public float orbitSpeed = 20f;
     private Vector3 orbitAxis;
 
+    // Interaction state variables
+    private bool isDragging = false;
+    private float zDistance;
+    private Vector3 offset;
+
     public void SetupText(string text, Color color, int fontSize = 90, float characterSize = 0.45f)
     {
         TextMesh tm = gameObject.AddComponent<TextMesh>();
@@ -21,6 +26,13 @@ public class OrbitingKeyword : MonoBehaviour
         tm.GetComponent<Renderer>().material = tm.font.material;
 
         orbitAxis = Random.onUnitSphere;
+
+        // Add a BoxCollider so the text can be clicked and dragged
+        BoxCollider box = gameObject.AddComponent<BoxCollider>();
+        // Approximate collider size based on text length
+        float width = text.Length * characterSize * 1.8f;
+        float height = characterSize * 5f;
+        box.size = new Vector3(width, height, 0.5f);
     }
 
     public void ChangeColor(Color newColor)
@@ -34,14 +46,58 @@ public class OrbitingKeyword : MonoBehaviour
 
     void Update()
     {
-        if (centerPoint != null)
+        // Stop movement with Space key
+        bool isPaused = Input.GetKey(KeyCode.Space);
+
+        if (centerPoint != null && !isDragging && !isPaused)
         {
             transform.RotateAround(centerPoint.position, orbitAxis, orbitSpeed * Time.deltaTime);
-            
-            if (Camera.main != null)
-            {
-                transform.rotation = Quaternion.LookRotation(transform.position - Camera.main.transform.position);
-            }
         }
+        
+        if (Camera.main != null)
+        {
+            // Keep text facing the camera even while paused or dragged
+            transform.rotation = Quaternion.LookRotation(transform.position - Camera.main.transform.position);
+        }
+    }
+
+    void OnMouseDown()
+    {
+        isDragging = true;
+        if (Camera.main != null)
+        {
+            zDistance = Camera.main.WorldToScreenPoint(transform.position).z;
+            offset = transform.position - GetMouseWorldPos();
+        }
+    }
+
+    void OnMouseDrag()
+    {
+        if (isDragging && Camera.main != null)
+        {
+            transform.position = GetMouseWorldPos() + offset;
+        }
+    }
+
+    void OnMouseUp()
+    {
+        isDragging = false;
+        
+        // When dropped, recalculate a new orbit axis so it continues orbiting naturally from its new dragged position
+        if (centerPoint != null)
+        {
+            Vector3 centerToCurrent = (transform.position - centerPoint.position).normalized;
+            orbitAxis = Vector3.Cross(centerToCurrent, Random.onUnitSphere).normalized;
+            
+            // Fallback just in case
+            if (orbitAxis == Vector3.zero) orbitAxis = Vector3.up;
+        }
+    }
+
+    private Vector3 GetMouseWorldPos()
+    {
+        Vector3 mousePoint = Input.mousePosition;
+        mousePoint.z = zDistance;
+        return Camera.main.ScreenToWorldPoint(mousePoint);
     }
 }

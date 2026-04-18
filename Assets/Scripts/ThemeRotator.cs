@@ -6,6 +6,10 @@ public class ThemeRotator : MonoBehaviour
 
     void Update()
     {
-        transform.Rotate(Vector3.up, rotationSpeed * Time.deltaTime, Space.Self);
+        // Allow user to stop movement with the Space key
+        if (!Input.GetKey(KeyCode.Space))
+        {
+            transform.Rotate(Vector3.up, rotationSpeed * Time.deltaTime, Space.Self);
+        }
     }
 }
