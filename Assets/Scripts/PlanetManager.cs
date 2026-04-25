@@ -15,6 +15,7 @@ public class PlanetManager : MonoBehaviour
     private float maxOrbitScale = 250f;
 
     // Checklist
+    private GameObject checklistCanvas;
     private Dictionary<string, Text> checklistTexts = new Dictionary<string, Text>();
     private int visitedCount = 0;
     private GameObject gotoPortalTextObj;
@@ -41,8 +42,8 @@ public class PlanetManager : MonoBehaviour
         TextMesh tm = textObj.AddComponent<TextMesh>();
         tm.text = themeName;
         tm.color = new Color(1f, 1f, 1f, 0.5f);
-        tm.fontSize = 120;
-        tm.characterSize = 0.5f;
+        tm.fontSize = 200;
+        tm.characterSize = 1.0f;
         tm.anchor = TextAnchor.MiddleCenter;
         
         Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
@@ -52,8 +53,8 @@ public class PlanetManager : MonoBehaviour
 
         textObj.AddComponent<BillboardText>();
 
-        ThemeRotator rotator = themeObj.AddComponent<ThemeRotator>();
-        rotator.rotationSpeed = Random.Range(15f, 30f) * (Random.value > 0.5f ? 1f : -1f);
+        // ThemeRotator removed from here so individual planets can orbit independently
+        // with speeds mapped to their tweet counts in GeneratePlanets().
 
         themeCenters.Add(themeName, themeObj);
         allPolarizingObjects.Add(themeObj);
@@ -77,11 +78,25 @@ public class PlanetManager : MonoBehaviour
             Camera.main.backgroundColor = Color.black;
         }
 
+        GameObject kObj = new GameObject("KeywordUIManager");
+        kObj.AddComponent<KeywordUIManager>();
+
         dataLoader.LoadData();
         CalculateBounds();
         GenerateStars();
         GeneratePlanets();
         CreateChecklistUI();
+    }
+
+    void Update()
+    {
+        if (UnityEngine.InputSystem.Keyboard.current != null && UnityEngine.InputSystem.Keyboard.current.mKey.wasPressedThisFrame)
+        {
+            if (checklistCanvas != null)
+            {
+                checklistCanvas.SetActive(!checklistCanvas.activeSelf);
+            }
+        }
     }
 
 
@@ -90,14 +105,14 @@ public class PlanetManager : MonoBehaviour
     // ─────────────────────────────────────────────
     void CreateChecklistUI()
     {
-        GameObject canvasObj = new GameObject("ChecklistCanvas");
-        Canvas canvas = canvasObj.AddComponent<Canvas>();
+        checklistCanvas = new GameObject("ChecklistCanvas");
+        Canvas canvas = checklistCanvas.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         canvas.sortingOrder = 9;
-        canvasObj.AddComponent<CanvasScaler>();
+        checklistCanvas.AddComponent<CanvasScaler>();
 
         GameObject bgObj = new GameObject("ChecklistBG");
-        bgObj.transform.SetParent(canvasObj.transform, false);
+        bgObj.transform.SetParent(checklistCanvas.transform, false);
         bgObj.AddComponent<Image>().color = new Color(0.02f, 0.02f, 0.02f, 0.9f);
 
         RectTransform bgRect = bgObj.GetComponent<RectTransform>();
@@ -107,8 +122,8 @@ public class PlanetManager : MonoBehaviour
         bgRect.anchoredPosition = new Vector2(-20f, -20f);
 
         VerticalLayoutGroup vlg = bgObj.AddComponent<VerticalLayoutGroup>();
-        vlg.padding = new RectOffset(15, 15, 15, 15);
-        vlg.spacing = 5;
+        vlg.padding = new RectOffset(25, 25, 25, 25);
+        vlg.spacing = 10;
         vlg.childForceExpandHeight = false;
         vlg.childForceExpandWidth = true;
         vlg.childControlHeight = true;
@@ -122,7 +137,7 @@ public class PlanetManager : MonoBehaviour
         Font f = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
 
         // Başlık
-        MakeCLText(bgObj, f, "<b><color=#ffffff>Discover the planets</color></b>\n", 10);
+        MakeCLText(bgObj, f, "<b><color=#ffffff>Discover the planets</color></b>\n", 24);
 
         // Her gezegen satırı
         foreach (var category in dataLoader.PolarizingViews.Keys)
@@ -133,7 +148,7 @@ public class PlanetManager : MonoBehaviour
             itemText.font = f;
             itemText.text = category + " ( )";
             itemText.color = new Color(0.6f, 0.6f, 0.6f);
-            itemText.fontSize = 7;
+            itemText.fontSize = 18;
             itemText.alignment = TextAnchor.MiddleLeft;
             itemObj.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
             checklistTexts[category] = itemText;
@@ -145,7 +160,7 @@ public class PlanetManager : MonoBehaviour
         Text pText = gotoPortalTextObj.AddComponent<Text>();
         pText.font = f;
         pText.text = "\n<b><color=#ffffff>-> GO TO PORTAL</color></b>";
-        pText.fontSize = 9;
+        pText.fontSize = 20;
         pText.alignment = TextAnchor.MiddleCenter;
         gotoPortalTextObj.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
         gotoPortalTextObj.SetActive(false);
@@ -157,7 +172,7 @@ public class PlanetManager : MonoBehaviour
         bridgeChecklistText.font = f;
         bridgeChecklistText.text = "Explore the bridge ( )";
         bridgeChecklistText.color = new Color(0.6f, 0.6f, 0.6f);
-        bridgeChecklistText.fontSize = 7;
+        bridgeChecklistText.fontSize = 18;
         bridgeChecklistText.alignment = TextAnchor.MiddleLeft;
         bridgeChecklistItemObj.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
         bridgeChecklistItemObj.SetActive(false);
@@ -455,10 +470,21 @@ public class PlanetManager : MonoBehaviour
 
             GameObject themeCenter = GetOrCreateThemeCenter(themeName, themePosition);
 
+            // Create individual orbit pivot for each planet
+            GameObject orbitPivot = new GameObject("OrbitPivot_" + viewData.CategoryName);
+            orbitPivot.transform.position = themeCenter.transform.position;
+            orbitPivot.transform.SetParent(themeCenter.transform);
+
+            float normalizedScale = Mathf.InverseLerp(minTweetCount, maxTweetCount, viewData.TweetCount);
+
+            // Orbit speed correctly associated with orbit scale and derived from engagement metric
+            ThemeRotator pRotator = orbitPivot.AddComponent<ThemeRotator>();
+            pRotator.rotationSpeed = Mathf.Lerp(5f, 50f, normalizedScale) * (Random.value > 0.5f ? 1f : -1f);
+
             GameObject planetObj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             planetObj.name = "Planet_" + viewData.CategoryName;
             
-            planetObj.transform.SetParent(themeCenter.transform, false);
+            planetObj.transform.SetParent(orbitPivot.transform, false);
 
             float orbitDistance = Random.Range(200f, 400f);
             float angle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
@@ -467,7 +493,6 @@ public class PlanetManager : MonoBehaviour
             // Get absolute position to use for keyword spawning later below
             Vector3 position = planetObj.transform.position;
 
-            float normalizedScale = Mathf.InverseLerp(minTweetCount, maxTweetCount, viewData.TweetCount);
             float exponentialScale = Mathf.Pow(normalizedScale, 1.5f);
             float planetScale = Mathf.Lerp(minPlanetScale, maxPlanetScale, exponentialScale);
             planetObj.transform.localScale = Vector3.one * planetScale;
@@ -559,9 +584,9 @@ public class PlanetManager : MonoBehaviour
                 GameObject wordObj = new GameObject("Keyword_" + word);
                 wordObj.transform.position = position + Random.onUnitSphere * orbitRadius;
                 
-                // Parent the keywords to the ThemeCenter so they move in the solar system,
-                // without inheriting the large scale of the actual planetObj.
-                wordObj.transform.SetParent(themeCenter.transform, true);
+                // Parent the keywords to the OrbitPivot so they move natively in the solar system,
+                // securely following the planet's localized position offset accurately.
+                wordObj.transform.SetParent(orbitPivot.transform, true);
 
                 int count = viewData.KeywordFrequencies != null && viewData.KeywordFrequencies.ContainsKey(word) ? viewData.KeywordFrequencies[word] : 1;
                 
@@ -576,6 +601,12 @@ public class PlanetManager : MonoBehaviour
                 OrbitingKeyword ok = wordObj.AddComponent<OrbitingKeyword>();
                 ok.centerPoint = planetObj.transform;
                 ok.orbitSpeed = Random.Range(15f, 40f);
+                ok.totalFrequency = count;
+                
+                if (viewData.KeywordTweets.ContainsKey(word))
+                {
+                    ok.relatedTweets = viewData.KeywordTweets[word];
+                }
                 
                 // Size mapping: Most words are 0.15f, highest are 0.6f. Font size stays static.
                 float cSize = Mathf.Lerp(0.15f, 0.6f, t);

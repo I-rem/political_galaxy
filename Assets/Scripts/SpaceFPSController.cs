@@ -15,6 +15,7 @@ public class SpaceFPSController : MonoBehaviour
     private Vector3 currentVelocity = Vector3.zero;
     
     private GameObject crosshairCanvas;
+    private OrbitingKeyword draggingKeyword = null;
 
     void Start()
     {
@@ -133,5 +134,37 @@ public class SpaceFPSController : MonoBehaviour
         }
 
         cc.Move(currentVelocity * Time.deltaTime);
+
+        // Raycasting for orbiting keywords manually
+        if (Mouse.current != null)
+        {
+            if (Mouse.current.leftButton.wasPressedThisFrame)
+            {
+                Ray ray = new Ray(Camera.main.transform.position, Camera.main.transform.forward);
+                RaycastHit hit;
+                if (Physics.Raycast(ray, out hit, 1500f))
+                {
+                    OrbitingKeyword keyword = hit.collider.GetComponent<OrbitingKeyword>();
+                    if (keyword != null)
+                    {
+                        draggingKeyword = keyword;
+                        keyword.ManualMouseDown();
+                    }
+                }
+            }
+
+            if (draggingKeyword != null)
+            {
+                if (Mouse.current.leftButton.isPressed)
+                {
+                    draggingKeyword.ManualMouseDrag();
+                }
+                if (Mouse.current.leftButton.wasReleasedThisFrame)
+                {
+                    draggingKeyword.ManualMouseUp();
+                    draggingKeyword = null;
+                }
+            }
+        }
     }
 }

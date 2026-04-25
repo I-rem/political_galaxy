@@ -11,6 +11,12 @@ public class OrbitingKeyword : MonoBehaviour
     private bool isDragging = false;
     private float zDistance;
     private Vector3 offset;
+    private float mouseDownTime;
+    private Vector3 mouseDownPos;
+
+    // Associated tweets
+    public System.Collections.Generic.List<string> relatedTweets;
+    public int totalFrequency;
 
     public void SetupText(string text, Color color, int fontSize = 90, float characterSize = 0.45f)
     {
@@ -63,9 +69,11 @@ public class OrbitingKeyword : MonoBehaviour
         }
     }
 
-    void OnMouseDown()
+    public void ManualMouseDown()
     {
         isDragging = true;
+        mouseDownTime = Time.time;
+        mouseDownPos = Mouse.current != null ? (Vector3)Mouse.current.position.ReadValue() : Vector3.zero;
         if (Camera.main != null)
         {
             zDistance = Camera.main.WorldToScreenPoint(transform.position).z;
@@ -73,7 +81,7 @@ public class OrbitingKeyword : MonoBehaviour
         }
     }
 
-    void OnMouseDrag()
+    public void ManualMouseDrag()
     {
         if (isDragging && Camera.main != null)
         {
@@ -81,10 +89,22 @@ public class OrbitingKeyword : MonoBehaviour
         }
     }
 
-    void OnMouseUp()
+    public void ManualMouseUp()
     {
         isDragging = false;
         
+        // Differentiate click from drag
+        Vector3 currentMousePos = Mouse.current != null ? (Vector3)Mouse.current.position.ReadValue() : Vector3.zero;
+        float dragDistance = Vector3.Distance(mouseDownPos, currentMousePos);
+        if (Time.time - mouseDownTime < 0.3f && dragDistance < 10f)
+        {
+            // It's a click!
+            if (KeywordUIManager.Instance != null)
+            {
+                KeywordUIManager.Instance.ShowKeywordTweets(GetComponent<TextMesh>().text, relatedTweets, totalFrequency);
+            }
+        }
+
         // When dropped, recalculate a new orbit axis so it continues orbiting naturally from its new dragged position
         if (centerPoint != null)
         {
