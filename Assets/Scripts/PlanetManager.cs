@@ -88,9 +88,28 @@ public class PlanetManager : MonoBehaviour
         CreateChecklistUI();
     }
 
+    private bool prevSecBtn = false;
+
     void Update()
     {
-        if (UnityEngine.InputSystem.Keyboard.current != null && UnityEngine.InputSystem.Keyboard.current.mKey.wasPressedThisFrame)
+        bool toggleM = false;
+        if (UnityEngine.InputSystem.Keyboard.current != null && UnityEngine.InputSystem.Keyboard.current.mKey.wasPressedThisFrame) toggleM = true;
+        
+        if (UnityEngine.XR.XRSettings.isDeviceActive)
+        {
+            var rh = new List<UnityEngine.XR.InputDevice>();
+            UnityEngine.XR.InputDevices.GetDevicesWithCharacteristics(UnityEngine.XR.InputDeviceCharacteristics.Left | UnityEngine.XR.InputDeviceCharacteristics.Controller, rh);
+            if (rh.Count > 0)
+            {
+                if (rh[0].TryGetFeatureValue(UnityEngine.XR.CommonUsages.secondaryButton, out bool sb))
+                {
+                    if (sb && !prevSecBtn) toggleM = true;
+                    prevSecBtn = sb;
+                }
+            }
+        }
+
+        if (toggleM)
         {
             if (checklistCanvas != null)
             {
@@ -107,8 +126,22 @@ public class PlanetManager : MonoBehaviour
     {
         checklistCanvas = new GameObject("ChecklistCanvas");
         Canvas canvas = checklistCanvas.AddComponent<Canvas>();
-        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        canvas.sortingOrder = 9;
+        if (UnityEngine.XR.XRSettings.isDeviceActive)
+        {
+            canvas.renderMode = RenderMode.WorldSpace;
+            if (Camera.main != null)
+            {
+                checklistCanvas.transform.SetParent(Camera.main.transform, false);
+                checklistCanvas.transform.localPosition = new Vector3(-0.8f, -0.2f, 2f); // Bottom left
+                checklistCanvas.transform.localRotation = Quaternion.Euler(0, 15f, 0); // Slight angle
+                checklistCanvas.transform.localScale = new Vector3(0.002f, 0.002f, 0.002f);
+            }
+        }
+        else
+        {
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 9;
+        }
         checklistCanvas.AddComponent<CanvasScaler>();
 
         GameObject bgObj = new GameObject("ChecklistBG");

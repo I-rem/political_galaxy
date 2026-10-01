@@ -50,8 +50,23 @@ public class PlanetGravity : MonoBehaviour
         infoCanvas.SetActive(false);
 
         Canvas canvas = infoCanvas.AddComponent<Canvas>();
-        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        canvas.sortingOrder = 100;
+        if (UnityEngine.XR.XRSettings.isDeviceActive)
+        {
+            canvas.renderMode = RenderMode.WorldSpace;
+            if (Camera.main != null)
+            {
+                infoCanvas.transform.SetParent(Camera.main.transform, false);
+                infoCanvas.transform.localPosition = new Vector3(0, 0f, 2.5f); 
+                infoCanvas.transform.localRotation = Quaternion.identity;
+                infoCanvas.transform.localScale = new Vector3(0.002f, 0.002f, 0.002f);
+            }
+        }
+        else
+        {
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 100;
+        }
+
         CanvasScaler cScaler = infoCanvas.AddComponent<CanvasScaler>();
         cScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         cScaler.referenceResolution = new Vector2(1920, 1080);
@@ -104,14 +119,45 @@ public class PlanetGravity : MonoBehaviour
         infoText.text = description;
     }
 
+    private bool prevTrig = false;
+
     void Update()
     {
-        if (isPlayerAtCore && Keyboard.current != null)
+        if (isPlayerAtCore)
         {
-            if (Keyboard.current.escapeKey.wasPressedThisFrame ||
-                Keyboard.current.enterKey.wasPressedThisFrame ||
-                Keyboard.current.eKey.wasPressedThisFrame ||
-                (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame))
+            bool wantsToClose = false;
+            
+            if (Keyboard.current != null)
+            {
+                if (Keyboard.current.escapeKey.wasPressedThisFrame ||
+                    Keyboard.current.enterKey.wasPressedThisFrame ||
+                    Keyboard.current.eKey.wasPressedThisFrame)
+                {
+                    wantsToClose = true;
+                }
+            }
+
+            if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+            {
+                wantsToClose = true;
+            }
+
+            if (UnityEngine.XR.XRSettings.isDeviceActive)
+            {
+                var devices = new List<UnityEngine.XR.InputDevice>();
+                UnityEngine.XR.InputDevices.GetDevicesWithCharacteristics(UnityEngine.XR.InputDeviceCharacteristics.Controller, devices);
+                foreach (var d in devices)
+                {
+                    if (d.TryGetFeatureValue(UnityEngine.XR.CommonUsages.triggerButton, out bool trig))
+                    {
+                        if (trig && !prevTrig) wantsToClose = true;
+                        prevTrig = trig;
+                    }
+                    if (d.TryGetFeatureValue(UnityEngine.XR.CommonUsages.primaryButton, out bool prim) && prim) wantsToClose = true;
+                }
+            }
+
+            if (wantsToClose)
             {
                 ClosePanelAndResume();
             }

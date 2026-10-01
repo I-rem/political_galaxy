@@ -24,14 +24,34 @@ public class KeywordUIManager : MonoBehaviour
         canvasObj.SetActive(false);
     }
 
+    private bool prevTrig = false;
+
     void Update()
     {
         if (canvasObj != null && canvasObj.activeSelf)
         {
+            bool wantsToClose = false;
             if (UnityEngine.InputSystem.Keyboard.current != null && UnityEngine.InputSystem.Keyboard.current.escapeKey.wasPressedThisFrame)
             {
-                CloseUI();
+                wantsToClose = true;
             }
+
+            if (UnityEngine.XR.XRSettings.isDeviceActive)
+            {
+                var rh = new List<UnityEngine.XR.InputDevice>();
+                UnityEngine.XR.InputDevices.GetDevicesWithCharacteristics(UnityEngine.XR.InputDeviceCharacteristics.Right | UnityEngine.XR.InputDeviceCharacteristics.Controller, rh);
+                if (rh.Count > 0)
+                {
+                    if (rh[0].TryGetFeatureValue(UnityEngine.XR.CommonUsages.triggerButton, out bool trigger))
+                    {
+                         if (trigger && !prevTrig) wantsToClose = true;
+                         prevTrig = trigger;
+                    }
+                    if (rh[0].TryGetFeatureValue(UnityEngine.XR.CommonUsages.primaryButton, out bool pb) && pb) wantsToClose = true;
+                }
+            }
+
+            if (wantsToClose) CloseUI();
         }
     }
 
@@ -40,8 +60,22 @@ public class KeywordUIManager : MonoBehaviour
         // Canvas Setup (Overlay on top of everything)
         canvasObj = new GameObject("KeywordUICanvas");
         Canvas canvas = canvasObj.AddComponent<Canvas>();
-        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        canvas.sortingOrder = 100;
+        if (UnityEngine.XR.XRSettings.isDeviceActive)
+        {
+            canvas.renderMode = RenderMode.WorldSpace;
+            if (Camera.main != null)
+            {
+                canvasObj.transform.SetParent(Camera.main.transform, false);
+                canvasObj.transform.localPosition = new Vector3(0, 0, 2f); // Center
+                canvasObj.transform.localRotation = Quaternion.identity;
+                canvasObj.transform.localScale = new Vector3(0.0015f, 0.0015f, 0.0015f);
+            }
+        }
+        else
+        {
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 100;
+        }
         
         CanvasScaler scaler = canvasObj.AddComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;

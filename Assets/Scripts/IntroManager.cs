@@ -14,6 +14,8 @@ public class IntroManager : MonoBehaviour
         PauseGame();
     }
 
+    private bool prevTrig = false;
+
     void Update()
     {
         // Ensure the cursor remains unlocked while the intro screen is active
@@ -23,6 +25,24 @@ public class IntroManager : MonoBehaviour
             {
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
+            }
+
+            if (UnityEngine.XR.XRSettings.isDeviceActive)
+            {
+                var devices = new System.Collections.Generic.List<UnityEngine.XR.InputDevice>();
+                UnityEngine.XR.InputDevices.GetDevicesWithCharacteristics(UnityEngine.XR.InputDeviceCharacteristics.Controller, devices);
+                foreach (var d in devices)
+                {
+                    if (d.TryGetFeatureValue(UnityEngine.XR.CommonUsages.triggerButton, out bool trig))
+                    {
+                        if (trig && !prevTrig)
+                        {
+                            StartGame();
+                            break;
+                        }
+                        prevTrig = trig;
+                    }
+                }
             }
         }
     }
@@ -38,8 +58,22 @@ public class IntroManager : MonoBehaviour
 
         introCanvas = new GameObject("IntroCanvas");
         Canvas canvas = introCanvas.AddComponent<Canvas>();
-        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        canvas.sortingOrder = 999;
+        if (UnityEngine.XR.XRSettings.isDeviceActive)
+        {
+            canvas.renderMode = RenderMode.WorldSpace;
+            if (Camera.main != null)
+            {
+                introCanvas.transform.SetParent(Camera.main.transform, false);
+                introCanvas.transform.localPosition = new Vector3(0, 0, 3f); 
+                introCanvas.transform.localRotation = Quaternion.identity;
+                introCanvas.transform.localScale = new Vector3(0.002f, 0.002f, 0.002f);
+            }
+        }
+        else
+        {
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 999;
+        }
         
         introCanvas.AddComponent<GraphicRaycaster>(); // Allows UI clicks
 
