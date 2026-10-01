@@ -15,6 +15,7 @@ public class PlanetManager : MonoBehaviour
     private float maxOrbitScale = 250f;
 
     // Checklist
+    private GameObject checklistCanvas;
     private Dictionary<string, Text> checklistTexts = new Dictionary<string, Text>();
     private int visitedCount = 0;
     private GameObject gotoPortalTextObj;
@@ -24,6 +25,42 @@ public class PlanetManager : MonoBehaviour
     // Portal
     private List<GameObject> allPolarizingObjects = new List<GameObject>();
     private bool portalSpawned = false;
+    private Dictionary<string, GameObject> themeCenters = new Dictionary<string, GameObject>();
+
+    private GameObject GetOrCreateThemeCenter(string themeName, Vector3 position)
+    {
+        if (themeCenters.ContainsKey(themeName))
+            return themeCenters[themeName];
+
+        GameObject themeObj = new GameObject("Theme_" + themeName);
+        themeObj.transform.position = position;
+        
+        GameObject textObj = new GameObject("ThemeText_" + themeName);
+        textObj.transform.position = position;
+        textObj.transform.SetParent(themeObj.transform);
+
+        TextMesh tm = textObj.AddComponent<TextMesh>();
+        tm.text = themeName;
+        tm.color = new Color(1f, 1f, 1f, 0.5f);
+        tm.fontSize = 200;
+        tm.characterSize = 1.0f;
+        tm.anchor = TextAnchor.MiddleCenter;
+        
+        Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        if(font == null) font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+        tm.font = font;
+        tm.GetComponent<Renderer>().material = tm.font.material;
+
+        textObj.AddComponent<BillboardText>();
+
+        // ThemeRotator removed from here so individual planets can orbit independently
+        // with speeds mapped to their tweet counts in GeneratePlanets().
+
+        themeCenters.Add(themeName, themeObj);
+        allPolarizingObjects.Add(themeObj);
+        
+        return themeObj;
+    }
 
     void Awake() { Instance = this; }
 
@@ -41,11 +78,44 @@ public class PlanetManager : MonoBehaviour
             Camera.main.backgroundColor = Color.black;
         }
 
+        GameObject kObj = new GameObject("KeywordUIManager");
+        kObj.AddComponent<KeywordUIManager>();
+
         dataLoader.LoadData();
         CalculateBounds();
         GenerateStars();
         GeneratePlanets();
         CreateChecklistUI();
+    }
+
+    private bool prevSecBtn = false;
+
+    void Update()
+    {
+        bool toggleM = false;
+        if (UnityEngine.InputSystem.Keyboard.current != null && UnityEngine.InputSystem.Keyboard.current.mKey.wasPressedThisFrame) toggleM = true;
+        
+        if (UnityEngine.XR.XRSettings.isDeviceActive)
+        {
+            var rh = new List<UnityEngine.XR.InputDevice>();
+            UnityEngine.XR.InputDevices.GetDevicesWithCharacteristics(UnityEngine.XR.InputDeviceCharacteristics.Left | UnityEngine.XR.InputDeviceCharacteristics.Controller, rh);
+            if (rh.Count > 0)
+            {
+                if (rh[0].TryGetFeatureValue(UnityEngine.XR.CommonUsages.secondaryButton, out bool sb))
+                {
+                    if (sb && !prevSecBtn) toggleM = true;
+                    prevSecBtn = sb;
+                }
+            }
+        }
+
+        if (toggleM)
+        {
+            if (checklistCanvas != null)
+            {
+                checklistCanvas.SetActive(!checklistCanvas.activeSelf);
+            }
+        }
     }
 
 
@@ -54,14 +124,28 @@ public class PlanetManager : MonoBehaviour
     // ─────────────────────────────────────────────
     void CreateChecklistUI()
     {
-        GameObject canvasObj = new GameObject("ChecklistCanvas");
-        Canvas canvas = canvasObj.AddComponent<Canvas>();
-        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        canvas.sortingOrder = 9;
-        canvasObj.AddComponent<CanvasScaler>();
+        checklistCanvas = new GameObject("ChecklistCanvas");
+        Canvas canvas = checklistCanvas.AddComponent<Canvas>();
+        if (UnityEngine.XR.XRSettings.isDeviceActive)
+        {
+            canvas.renderMode = RenderMode.WorldSpace;
+            if (Camera.main != null)
+            {
+                checklistCanvas.transform.SetParent(Camera.main.transform, false);
+                checklistCanvas.transform.localPosition = new Vector3(-0.8f, -0.2f, 2f); // Bottom left
+                checklistCanvas.transform.localRotation = Quaternion.Euler(0, 15f, 0); // Slight angle
+                checklistCanvas.transform.localScale = new Vector3(0.002f, 0.002f, 0.002f);
+            }
+        }
+        else
+        {
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 9;
+        }
+        checklistCanvas.AddComponent<CanvasScaler>();
 
         GameObject bgObj = new GameObject("ChecklistBG");
-        bgObj.transform.SetParent(canvasObj.transform, false);
+        bgObj.transform.SetParent(checklistCanvas.transform, false);
         bgObj.AddComponent<Image>().color = new Color(0.02f, 0.02f, 0.02f, 0.9f);
 
         RectTransform bgRect = bgObj.GetComponent<RectTransform>();
@@ -71,8 +155,8 @@ public class PlanetManager : MonoBehaviour
         bgRect.anchoredPosition = new Vector2(-20f, -20f);
 
         VerticalLayoutGroup vlg = bgObj.AddComponent<VerticalLayoutGroup>();
-        vlg.padding = new RectOffset(15, 15, 15, 15);
-        vlg.spacing = 5;
+        vlg.padding = new RectOffset(25, 25, 25, 25);
+        vlg.spacing = 10;
         vlg.childForceExpandHeight = false;
         vlg.childForceExpandWidth = true;
         vlg.childControlHeight = true;
@@ -86,7 +170,7 @@ public class PlanetManager : MonoBehaviour
         Font f = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
 
         // Başlık
-        MakeCLText(bgObj, f, "<b><color=#ffffff>Discover the planets</color></b>\n", 10);
+        MakeCLText(bgObj, f, "<b><color=#ffffff>Discover the planets</color></b>\n", 24);
 
         // Her gezegen satırı
         foreach (var category in dataLoader.PolarizingViews.Keys)
@@ -97,7 +181,7 @@ public class PlanetManager : MonoBehaviour
             itemText.font = f;
             itemText.text = category + " ( )";
             itemText.color = new Color(0.6f, 0.6f, 0.6f);
-            itemText.fontSize = 7;
+            itemText.fontSize = 18;
             itemText.alignment = TextAnchor.MiddleLeft;
             itemObj.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
             checklistTexts[category] = itemText;
@@ -109,7 +193,7 @@ public class PlanetManager : MonoBehaviour
         Text pText = gotoPortalTextObj.AddComponent<Text>();
         pText.font = f;
         pText.text = "\n<b><color=#ffffff>-> GO TO PORTAL</color></b>";
-        pText.fontSize = 9;
+        pText.fontSize = 20;
         pText.alignment = TextAnchor.MiddleCenter;
         gotoPortalTextObj.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
         gotoPortalTextObj.SetActive(false);
@@ -121,7 +205,7 @@ public class PlanetManager : MonoBehaviour
         bridgeChecklistText.font = f;
         bridgeChecklistText.text = "Explore the bridge ( )";
         bridgeChecklistText.color = new Color(0.6f, 0.6f, 0.6f);
-        bridgeChecklistText.fontSize = 7;
+        bridgeChecklistText.fontSize = 18;
         bridgeChecklistText.alignment = TextAnchor.MiddleLeft;
         bridgeChecklistItemObj.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
         bridgeChecklistItemObj.SetActive(false);
@@ -361,29 +445,87 @@ public class PlanetManager : MonoBehaviour
     // ─────────────────────────────────────────────
     // POLARİZİNG GEZEGENLER
     // ─────────────────────────────────────────────
+    private Color GetPlanetColor(string category)
+    {
+        string catLower = category.ToLower();
+        if (catLower.Contains("religious")) return new Color(0.8f, 0.1f, 0.8f, 1f); // Purple
+        if (catLower.Contains("populism")) return new Color(0.9f, 0.6f, 0.1f, 1f); // Orange
+        if (catLower.Contains("gender")) return new Color(0.1f, 0.8f, 0.6f, 1f); // Teal
+        if (catLower.Contains("ethno")) return new Color(0.9f, 0.1f, 0.1f, 1f); // Red
+        if (catLower.Contains("eco")) return new Color(0.2f, 0.9f, 0.2f, 1f); // Green
+        
+        // New categories
+        if (catLower.Contains("progressive")) return new Color(0.1f, 0.4f, 0.9f, 1f); // Deep Blue
+        if (catLower.Contains("identitarian")) return new Color(0.9f, 0.3f, 0.6f, 1f); // Pink/Magenta
+        if (catLower.Contains("libertarian")) return new Color(0.9f, 0.9f, 0.1f, 1f); // Yellow
+            
+        Random.InitState(category.GetHashCode());
+        return new Color(Random.Range(0.2f, 0.9f), Random.Range(0.2f, 0.9f), Random.Range(0.2f, 0.9f), 1f);
+    }
+
     void GeneratePlanets()
     {
-        float angleStep = 360f / dataLoader.PolarizingViews.Count;
         int index = 0;
 
         foreach (var kvp in dataLoader.PolarizingViews)
         {
             PoliticalViewData viewData = kvp.Value;
 
-            float angle = index * angleStep * Mathf.Deg2Rad;
-            float clusterRadius = 350f;
+            string catLower = viewData.CategoryName.ToLower();
+            string themeName = "Unknown Theme";
+            Vector3 themePosition = Vector3.zero;
 
-            Vector3 position = new Vector3(
-                Mathf.Cos(angle) * clusterRadius,
-                Random.Range(-150f, 150f) + Mathf.Sin(angle) * clusterRadius * 0.5f,
-                650f + Random.Range(-100f, 100f)
-            );
+            if (catLower.Contains("identitarian") || catLower.Contains("ethno") || catLower.Contains("alt-right") || catLower.Contains("social justice"))
+            {
+                themeName = "Racism & Identity";
+                themePosition = new Vector3(-400f, 300f, 650f);
+            }
+            else if (catLower.Contains("gender"))
+            {
+                themeName = "Sexism & Gender";
+                themePosition = new Vector3(400f, 300f, 650f);
+            }
+            else if (catLower.Contains("progressive") || catLower.Contains("libertarian") || catLower.Contains("populism") || catLower.Contains("hyper") || catLower.Contains("free market") || catLower.Contains("democratic socialism"))
+            {
+                themeName = "The Economy & Establishment";
+                themePosition = new Vector3(0f, -400f, 650f);
+            }
+            else if (catLower.Contains("eco") || catLower.Contains("religious"))
+            {
+                themeName = "Dogma & The Apocalypse";
+                themePosition = new Vector3(0f, 700f, 650f);
+            }
+            else 
+            {
+                themeName = "Fringe Outliers";
+                themePosition = new Vector3(800f, 0f, 650f);
+            }
+
+            GameObject themeCenter = GetOrCreateThemeCenter(themeName, themePosition);
+
+            // Create individual orbit pivot for each planet
+            GameObject orbitPivot = new GameObject("OrbitPivot_" + viewData.CategoryName);
+            orbitPivot.transform.position = themeCenter.transform.position;
+            orbitPivot.transform.SetParent(themeCenter.transform);
+
+            float normalizedScale = Mathf.InverseLerp(minTweetCount, maxTweetCount, viewData.TweetCount);
+
+            // Orbit speed correctly associated with orbit scale and derived from engagement metric
+            ThemeRotator pRotator = orbitPivot.AddComponent<ThemeRotator>();
+            pRotator.rotationSpeed = Mathf.Lerp(5f, 50f, normalizedScale) * (Random.value > 0.5f ? 1f : -1f);
 
             GameObject planetObj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             planetObj.name = "Planet_" + viewData.CategoryName;
-            planetObj.transform.position = position;
+            
+            planetObj.transform.SetParent(orbitPivot.transform, false);
 
-            float normalizedScale = Mathf.InverseLerp(minTweetCount, maxTweetCount, viewData.TweetCount);
+            float orbitDistance = Random.Range(200f, 400f);
+            float angle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
+            planetObj.transform.localPosition = new Vector3(Mathf.Cos(angle) * orbitDistance, Random.Range(-50f, 50f), Mathf.Sin(angle) * orbitDistance);
+
+            // Get absolute position to use for keyword spawning later below
+            Vector3 position = planetObj.transform.position;
+
             float exponentialScale = Mathf.Pow(normalizedScale, 1.5f);
             float planetScale = Mathf.Lerp(minPlanetScale, maxPlanetScale, exponentialScale);
             planetObj.transform.localScale = Vector3.one * planetScale;
@@ -403,7 +545,7 @@ public class PlanetManager : MonoBehaviour
             main.simulationSpace = ParticleSystemSimulationSpace.World;
             main.scalingMode = ParticleSystemScalingMode.Hierarchy;
 
-            Color pColor = new Color(0.9f, 0.1f, 0.1f, 1f);
+            Color pColor = GetPlanetColor(viewData.CategoryName);
             main.startColor = pColor;
 
             var em = ps.emission;
@@ -439,7 +581,30 @@ public class PlanetManager : MonoBehaviour
             pg.PlanetPS = ps;
             pg.PlanetRenderer = planetObj.GetComponent<Renderer>();
 
+            // 3D Audio Setup
             float orbitRadius = Mathf.Lerp(minOrbitScale, maxOrbitScale, exponentialScale);
+
+            AudioSource source = planetObj.AddComponent<AudioSource>();
+            source.spatialBlend = 1f;
+            source.minDistance = 100f;
+            source.maxDistance = orbitRadius * 2.5f; // Ensures it fades out past orbit
+            source.rolloffMode = AudioRolloffMode.Logarithmic;
+            source.loop = true;
+            source.playOnAwake = true;
+            source.volume = 0.8f;
+            
+            // Mass inversely proportional to pitch. Heavier = deeper hum
+            source.pitch = Mathf.Lerp(1.5f, 0.4f, normalizedScale);
+            
+            if (AudioManager.Instance != null)
+            {
+                if (AudioManager.Instance.orbitEntryClip != null)
+                {
+                    source.clip = AudioManager.Instance.orbitEntryClip;
+                    source.Play();
+                }
+            }
+
             SphereCollider orbitCollider = planetObj.AddComponent<SphereCollider>();
             orbitCollider.isTrigger = true;
             orbitCollider.radius = orbitRadius / planetScale;
@@ -451,11 +616,35 @@ public class PlanetManager : MonoBehaviour
 
                 GameObject wordObj = new GameObject("Keyword_" + word);
                 wordObj.transform.position = position + Random.onUnitSphere * orbitRadius;
+                
+                // Parent the keywords to the OrbitPivot so they move natively in the solar system,
+                // securely following the planet's localized position offset accurately.
+                wordObj.transform.SetParent(orbitPivot.transform, true);
+
+                int count = viewData.KeywordFrequencies != null && viewData.KeywordFrequencies.ContainsKey(word) ? viewData.KeywordFrequencies[word] : 1;
+                
+                // Map count (e.g. 1 to 20) to a 0-1 range
+                float t = Mathf.Clamp01((count - 1f) / 19f);
+                
+                // Color mapping: To make it physically "glow" in Unity, the RGB values must exceed 1.0 (HDR). 
+                // We multiply the peak common words by 5x to trigger Post-Processing Bloom!
+                float hdrMultiplier = 1f + (t * 4f); 
+                Color glowingColor = new Color(pColor.r * hdrMultiplier, pColor.g * hdrMultiplier, pColor.b * hdrMultiplier, 0.6f + t * 0.4f);
 
                 OrbitingKeyword ok = wordObj.AddComponent<OrbitingKeyword>();
                 ok.centerPoint = planetObj.transform;
-                ok.orbitSpeed = Random.Range(2f, 8f);
-                ok.SetupText(word, new Color(1f, 0f, 0f, 0.8f));
+                ok.orbitSpeed = Random.Range(15f, 40f);
+                ok.totalFrequency = count;
+                
+                if (viewData.KeywordTweets.ContainsKey(word))
+                {
+                    ok.relatedTweets = viewData.KeywordTweets[word];
+                }
+                
+                // Size mapping: Most words are 0.15f, highest are 0.6f. Font size stays static.
+                float cSize = Mathf.Lerp(0.15f, 0.6f, t);
+                
+                ok.SetupText(word, glowingColor, 90, cSize);
                 pg.OrbitingKeywords.Add(ok);
 
                 // Keyword → Portal listesine ekle (bridge geçişinde gizlenecek)

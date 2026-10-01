@@ -1,10 +1,22 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class OrbitingKeyword : MonoBehaviour
 {
     public Transform centerPoint;
     public float orbitSpeed = 20f;
     private Vector3 orbitAxis;
+
+    // Interaction state variables
+    private bool isDragging = false;
+    private float zDistance;
+    private Vector3 offset;
+    private float mouseDownTime;
+    private Vector3 mouseDownPos;
+
+    // Associated tweets
+    public System.Collections.Generic.List<string> relatedTweets;
+    public int totalFrequency;
 
     public void SetupText(string text, Color color, int fontSize = 90, float characterSize = 0.45f)
     {
@@ -21,6 +33,14 @@ public class OrbitingKeyword : MonoBehaviour
         tm.GetComponent<Renderer>().material = tm.font.material;
 
         orbitAxis = Random.onUnitSphere;
+
+        // Add a BoxCollider so the text can be clicked and dragged
+        BoxCollider box = gameObject.AddComponent<BoxCollider>();
+        box.isTrigger = true; // Use trigger so it does not physically push the player
+        // Approximate collider size based on text length
+        float width = text.Length * characterSize * 1.8f;
+        float height = characterSize * 5f;
+        box.size = new Vector3(width, height, 0.5f);
     }
 
     public void ChangeColor(Color newColor)
@@ -34,14 +54,72 @@ public class OrbitingKeyword : MonoBehaviour
 
     void Update()
     {
-        if (centerPoint != null)
+        // Stop movement with Space key
+        bool isPaused = Keyboard.current != null && Keyboard.current.spaceKey.isPressed;
+
+        if (centerPoint != null && !isDragging && !isPaused)
         {
             transform.RotateAround(centerPoint.position, orbitAxis, orbitSpeed * Time.deltaTime);
-            
-            if (Camera.main != null)
+        }
+        
+        if (Camera.main != null)
+        {
+            // Keep text facing the camera even while paused or dragged
+            transform.rotation = Quaternion.LookRotation(transform.position - Camera.main.transform.position);
+        }
+    }
+
+    public void ManualMouseDown()
+    {
+        isDragging = true;
+        mouseDownTime = Time.time;
+        mouseDownPos = Mouse.current != null ? (Vector3)Mouse.current.position.ReadValue() : Vector3.zero;
+        if (Camera.main != null)
+        {
+            zDistance = Camera.main.WorldToScreenPoint(transform.position).z;
+            offset = transform.position - GetMouseWorldPos();
+        }
+    }
+
+    public void ManualMouseDrag()
+    {
+        if (isDragging && Camera.main != null)
+        {
+            transform.position = GetMouseWorldPos() + offset;
+        }
+    }
+
+    public void ManualMouseUp()
+    {
+        isDragging = false;
+        
+        // Differentiate click from drag
+        Vector3 currentMousePos = Mouse.current != null ? (Vector3)Mouse.current.position.ReadValue() : Vector3.zero;
+        float dragDistance = Vector3.Distance(mouseDownPos, currentMousePos);
+        if (Time.time - mouseDownTime < 0.3f && dragDistance < 10f)
+        {
+            // It's a click!
+            if (KeywordUIManager.Instance != null)
             {
-                transform.rotation = Quaternion.LookRotation(transform.position - Camera.main.transform.position);
+                KeywordUIManager.Instance.ShowKeywordTweets(GetComponent<TextMesh>().text, relatedTweets, totalFrequency);
             }
         }
+
+        // When dropped, recalculate a new orbit axis so it continues orbiting naturally from its new dragged position
+        if (centerPoint != null)
+        {
+            Vector3 centerToCurrent = (transform.position - centerPoint.position).normalized;
+            orbitAxis = Vector3.Cross(centerToCurrent, Random.onUnitSphere).normalized;
+            
+            // Fallback just in case
+            if (orbitAxis == Vector3.zero) orbitAxis = Vector3.up;
+        }
+    }
+
+    private Vector3 GetMouseWorldPos()
+    {
+        Vector2 mousePoint2D = Mouse.current != null ? Mouse.current.position.ReadValue() : Vector2.zero;
+        Vector3 mousePoint = new Vector3(mousePoint2D.x, mousePoint2D.y, zDistance);
+        return Camera.main.ScreenToWorldPoint(mousePoint);
     }
 }
