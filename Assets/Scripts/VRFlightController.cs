@@ -41,14 +41,15 @@ public class VRFlightController : MonoBehaviour
 
         // Freeze Planets Button (A/X)
         bool primaryPressed = false;
-        if (rightHand.TryGetFeatureValue(CommonUsages.primaryButton, out primaryPressed) || 
-            leftHand.TryGetFeatureValue(CommonUsages.primaryButton, out primaryPressed))
+        bool rightA = false, leftX = false;
+        if (rightHand.isValid) rightHand.TryGetFeatureValue(CommonUsages.primaryButton, out rightA);
+        if (leftHand.isValid) leftHand.TryGetFeatureValue(CommonUsages.primaryButton, out leftX);
+        primaryPressed = rightA || leftX || Input.GetButton("Fire1") || Input.GetButton("Submit");
+
+        if (primaryPressed && !lastPrimaryButtonState)
         {
-            if (primaryPressed && !lastPrimaryButtonState)
-            {
-                PlanetOrbit.GlobalPause = !PlanetOrbit.GlobalPause; // Toggle!
-                if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
-            }
+            PlanetOrbit.GlobalPause = !PlanetOrbit.GlobalPause; // Toggle!
+            if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
         }
         lastPrimaryButtonState = primaryPressed;
 
@@ -92,3 +93,4 @@ public class VRFlightController : MonoBehaviour
         }
     }
 }
+
