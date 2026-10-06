@@ -37,7 +37,7 @@ public class MuskTransitionManager : MonoBehaviour
         bool primaryButtonValue;
         
         bool isPressed = false;
-        if (rightHand.TryGetFeatureValue(CommonUsages.primaryButton, out primaryButtonValue) && primaryButtonValue) 
+        if (rightHand.TryGetFeatureValue(CommonUsages.secondaryButton, out primaryButtonValue) && primaryButtonValue) 
         {
             isPressed = true;
         }

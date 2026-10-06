@@ -127,7 +127,7 @@ public class PlanetManager : MonoBehaviour
                 existingCanvas.transform.localPosition = Vector3.zero;
                 existingCanvas.transform.localRotation = Quaternion.identity;
                 // Boyutu BURADA DA zorla küçültelim ki devasa kalmasın (iPad gibi olmasın, Telefon gibi olsun = 0.0002f)
-                existingCanvas.transform.localScale = Vector3.one * 0.00045f;
+                existingCanvas.transform.localScale = Vector3.one * 0.00035f;
             }
 
             // Dinamik objeleri bulup referanslayalım ki hata vermesin
@@ -235,7 +235,7 @@ public class PlanetManager : MonoBehaviour
             if (wristTransform != null)
             {
                 canvasObj.transform.SetParent(wristTransform, false);
-                canvasObj.transform.localScale = Vector3.one * 0.00045f; // Gerçek telefon boyutunda (14-15 cm)
+                canvasObj.transform.localScale = Vector3.one * 0.00035f; // Gerçek telefon boyutunda (14-15 cm)
                 canvasObj.transform.localPosition = Vector3.zero; 
                 canvasObj.transform.localRotation = Quaternion.identity; 
             }
