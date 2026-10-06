@@ -2,9 +2,9 @@ using UnityEditor;
 using UnityEngine;
 using UnityEditor.SceneManagement;
 
-public class AddHelmetHUD
+public class CleanupHUD
 {
-    [MenuItem("VR/Add Helmet HUD")]
+    [MenuItem("VR/Cleanup HUD Final")]
     public static void DoFix()
     {
         var scene = EditorSceneManager.OpenScene("Assets/Scenes/SampleScene.unity");
@@ -14,11 +14,12 @@ public class AddHelmetHUD
         
         if (cam != null)
         {
-            if (cam.GetComponent<HelmetHUD>() == null)
-            {
-                cam.gameObject.AddComponent<HelmetHUD>();
-            }
+            var hud = cam.GetComponent("HelmetHUD");
+            if (hud != null) Object.DestroyImmediate(hud);
         }
+
+        var canvasHud = GameObject.Find("HelmetHUD_Canvas");
+        if (canvasHud != null) Object.DestroyImmediate(canvasHud);
 
         EditorSceneManager.MarkSceneDirty(scene);
         EditorSceneManager.SaveScene(scene);
@@ -31,7 +32,7 @@ public class AddHelmetHUD
         buildPlayerOptions.target = BuildTarget.Android;
         buildPlayerOptions.options = BuildOptions.None;
 
-        Debug.Log("Starting VR 3D Build with Helmet HUD...");
+        Debug.Log("Starting VR 3D Build (NO HUD, CRISP TEXT)...");
         BuildPipeline.BuildPlayer(buildPlayerOptions);
         Debug.Log("Build Completed!");
     }
