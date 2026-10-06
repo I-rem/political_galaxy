@@ -127,7 +127,7 @@ public class PlanetManager : MonoBehaviour
                 existingCanvas.transform.localPosition = Vector3.zero;
                 existingCanvas.transform.localRotation = Quaternion.identity;
                 // Boyutu BURADA DA zorla küçültelim ki devasa kalmasın (iPad gibi olmasın, Telefon gibi olsun = 0.0002f)
-                existingCanvas.transform.localScale = Vector3.one * 0.0002f;
+                existingCanvas.transform.localScale = Vector3.one * 0.00045f;
             }
 
             // Dinamik objeleri bulup referanslayalım ki hata vermesin
@@ -235,7 +235,7 @@ public class PlanetManager : MonoBehaviour
             if (wristTransform != null)
             {
                 canvasObj.transform.SetParent(wristTransform, false);
-                canvasObj.transform.localScale = Vector3.one * 0.0002f; // Gerçek telefon boyutunda (14-15 cm)
+                canvasObj.transform.localScale = Vector3.one * 0.00045f; // Gerçek telefon boyutunda (14-15 cm)
                 canvasObj.transform.localPosition = Vector3.zero; 
                 canvasObj.transform.localRotation = Quaternion.identity; 
             }
@@ -519,7 +519,7 @@ public class PlanetManager : MonoBehaviour
                 // Bilek noktası: Kumandanın 15 cm gerisi (kolda) ve biraz üstü
                 offsetObj.transform.localPosition = new Vector3(0.0f, 0.05f, -0.1f);
                 // Kola saat takmışsınız gibi açısı ayarlandı
-                offsetObj.transform.localRotation = Quaternion.Euler(35f, 0f, 180f);
+                offsetObj.transform.localRotation = Quaternion.Euler(35f, 180f, 0f);
                 vrWristPoint = offsetObj.transform;
             }
             return vrWristPoint; // Sanal kol oluşturmadan direkt gerçek eli döndür

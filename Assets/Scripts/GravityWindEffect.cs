@@ -101,7 +101,7 @@ public class GravityWindEffect : MonoBehaviour
         if (currentEmissionRate <= 0.1f && targetEmissionRate > 0.1f)
         {
             currentEmissionRate = targetEmissionRate;
-            windPS.Emit(20); // Instant burst to fill the screen immediately
+            // windPS.Emit(20); removed to stop red flashing // Instant burst to fill the screen immediately
         }
         else
         {
@@ -137,11 +137,11 @@ public class GravityWindEffect : MonoBehaviour
 
         // Adjust speed slightly based on intensity
         main.startSpeed = Mathf.Clamp(intensity * 1.5f, 60f, 150f);
-        main.startSize = 0.15f; // Kalın çizgiler inceltildi
+        main.startSize = 0.03f; // Kalın çizgiler inceltildi
 
         // Rengi tamamen opak (1.0 alpha) yap, VR'da uçup gitmesin
         Color windColor = Color.Lerp(Color.white, planetColor, 0.4f);
-        windColor.a = 1f; 
+        windColor.a = 0.3f; 
         main.startColor = windColor;
     }
 

@@ -79,7 +79,7 @@ public class PlanetGravity : MonoBehaviour
         {
             float distance = Vector3.Distance(transform.position, playerTransform.position);
             
-            float pullRadius = 1500f;
+            float pullRadius = 300f;
             SphereCollider[] colliders = GetComponents<SphereCollider>();
             foreach(var c in colliders) {
                 
@@ -96,7 +96,7 @@ public class PlanetGravity : MonoBehaviour
                     Vector3 direction = (transform.position - playerTransform.position).normalized;
                     
                     float pullStrength = gravityForce * (1f - (distance / pullRadius));
-                    pullStrength = Mathf.Max(pullStrength, gravityForce * 0.35f);
+                    pullStrength = Mathf.Max(pullStrength, gravityForce * 0.1f);
                     pullStrength = Mathf.Clamp(pullStrength, 10f, gravityForce * 1.15f); 
 
                     if (vrFlight != null)
