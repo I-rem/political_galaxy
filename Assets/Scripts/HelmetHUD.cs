@@ -13,7 +13,7 @@ public class HelmetHUD : MonoBehaviour
         // Gzden 35 santim ileriye koyuyoruz
         hudObj.transform.localPosition = new Vector3(0, 0, 0.35f); 
         hudObj.transform.localRotation = Quaternion.identity;
-        hudObj.transform.localScale = Vector3.one * 0.0008f; 
+        hudObj.transform.localScale = Vector3.one * 0.0007f; 
 
         Canvas canvas = hudObj.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.WorldSpace;
@@ -23,7 +23,7 @@ public class HelmetHUD : MonoBehaviour
         raycaster.enabled = false; 
 
         RectTransform canvasRT = hudObj.GetComponent<RectTransform>();
-        canvasRT.sizeDelta = new Vector2(1400, 1400);
+        canvasRT.sizeDelta = new Vector2(800, 800);
 
         // Kask ereveleri (Kenarlardan 200 birim kalnlk)
         CreateBorder(hudObj.transform, "Top", new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, -250), new Vector2(0, 0));

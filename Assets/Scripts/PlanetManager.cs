@@ -519,7 +519,7 @@ public class PlanetManager : MonoBehaviour
                 // Bilek noktası: Kumandanın 15 cm gerisi (kolda) ve biraz üstü
                 offsetObj.transform.localPosition = new Vector3(0.0f, 0.05f, -0.1f);
                 // Kola saat takmışsınız gibi açısı ayarlandı
-                offsetObj.transform.localRotation = Quaternion.Euler(35f, 180f, 0f);
+                offsetObj.transform.localRotation = Quaternion.Euler(35f, 180f, 180f);
                 vrWristPoint = offsetObj.transform;
             }
             return vrWristPoint; // Sanal kol oluşturmadan direkt gerçek eli döndür
