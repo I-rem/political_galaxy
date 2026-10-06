@@ -38,14 +38,26 @@ public class IntroManager : MonoBehaviour
 
         introCanvas = new GameObject("IntroCanvas");
         Canvas canvas = introCanvas.AddComponent<Canvas>();
+
+#if ENABLE_VR || UNITY_ANDROID
+        // VR Setup
+        canvas.renderMode = RenderMode.WorldSpace;
+        
+        // Wait for next frame to position in front of camera
+        introCanvas.AddComponent<VRCanvasPlacer>();
+        introCanvas.AddComponent<UnityEngine.XR.Interaction.Toolkit.UI.TrackedDeviceGraphicRaycaster>();
+        
+        RectTransform rt = introCanvas.GetComponent<RectTransform>();
+        rt.sizeDelta = new Vector2(1920, 1080);
+#else
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         canvas.sortingOrder = 999;
-        
-        introCanvas.AddComponent<GraphicRaycaster>(); // Allows UI clicks
+        introCanvas.AddComponent<GraphicRaycaster>(); // Allows PC clicks
 
         CanvasScaler cScaler = introCanvas.AddComponent<CanvasScaler>();
         cScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         cScaler.referenceResolution = new Vector2(1920, 1080);
+#endif
 
         // Background Panel
         GameObject panelObj = new GameObject("BackgroundPanel");
@@ -111,7 +123,11 @@ public class IntroManager : MonoBehaviour
         controlsText.fontSize = 28;
         controlsText.alignment = TextAnchor.MiddleCenter;
         controlsText.supportRichText = true;
+#if ENABLE_VR || UNITY_ANDROID
+        controlsText.text = "<b>[ Left Joystick ]</b> Move Ship   |   <b>[ Right Joystick ]</b> Look Around   |   <b>[ Trigger ]</b> Select";
+#else
         controlsText.text = "<b>[ W A S D ]</b> Move Ship   |   <b>[ Mouse ]</b> Look Around   |   <b>[ Shift ]</b> Boost Speed   |   <b>[ E ] / [ Esc ]</b> Exit Orbit";
+#endif
         
         RectTransform controlsRect = controlsObj.GetComponent<RectTransform>();
         controlsRect.anchorMin = new Vector2(0.5f, 0.35f);
