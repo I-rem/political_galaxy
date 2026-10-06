@@ -3,18 +3,21 @@ using UnityEngine.XR;
 
 public class VRFlightController : MonoBehaviour
 {
-    public float flySpeed = 40f;
-    public float turnSpeed = 80f; // Dönüş hızı
+    public float flySpeed = 60f; // Hzi biraz artiralim
+    public float turnSpeed = 80f;
+    public bool isGameStarted = true;
     
-    public bool isGameStarted = false; // Oyunun başladığını kontrol eden bayrak
     private Transform cameraTransform;
+    private bool lastPrimaryButtonState = false;
 
     void Start()
     {
-        if (Camera.main != null)
-            cameraTransform = Camera.main.transform;
-        else
-            cameraTransform = GetComponentInChildren<Camera>()?.transform;
+        // Oto balat! Trigger'a gerek yok.
+        IntroManager[] intros = Resources.FindObjectsOfTypeAll<IntroManager>();
+        foreach(var intro in intros) if (intro.gameObject.scene.IsValid()) intro.StartGame();
+
+        GameObject startBtn = GameObject.Find("StartButton");
+        if (startBtn != null) Destroy(startBtn);
     }
 
     void Update()
@@ -22,81 +25,66 @@ public class VRFlightController : MonoBehaviour
         InputDevice rightHand = InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
         InputDevice leftHand = InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);
 
-        // Start butonuna basılmadıysa hiçbir harekete izin verme, tetik bekleyelim
-        if (!isGameStarted)
-        {
-            bool triggerPressed = false;
-            if (rightHand.TryGetFeatureValue(CommonUsages.triggerButton, out triggerPressed) && triggerPressed)
-            {
-                isGameStarted = true;
-                
-                IntroManager[] intros = Resources.FindObjectsOfTypeAll<IntroManager>();
-                foreach(var intro in intros) if (intro.gameObject.scene.IsValid()) intro.StartGame();
-
-                GameObject startBtn = GameObject.Find("StartButton");
-                if (startBtn != null) Destroy(startBtn);
-
-                if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
-            }
-            return;
-        }
-
-        // Kamerayı dinamik olarak bul
         Transform currentCam = Camera.main != null ? Camera.main.transform : null;
         if (currentCam == null) currentCam = GetComponentInChildren<Camera>()?.transform;
         if (currentCam == null) return;
 
         Vector3 moveDirection = Vector3.zero;
-
-        // 1. TETİK (TRIGGER) İLE GAZ VE FREN (İLERİ/GERİ)
-        // Sağ Tetik = İleri Gaz
-        float rightTrigger = 0f;
         float currentFlySpeed = flySpeed;
 
-        // Sağ Orta Parmak (Grip) = Hız Boostu (3x)
+        // Grip Boost
         float rightGrip = 0f;
         if (rightHand.TryGetFeatureValue(CommonUsages.grip, out rightGrip) && rightGrip > 0.5f)
         {
             currentFlySpeed *= 3f;
         }
 
-        if (rightHand.TryGetFeatureValue(CommonUsages.trigger, out rightTrigger) && rightTrigger > 0.1f)
+        // Freeze Planets Button (A/X)
+        bool primaryPressed = false;
+        if (rightHand.TryGetFeatureValue(CommonUsages.primaryButton, out primaryPressed) || 
+            leftHand.TryGetFeatureValue(CommonUsages.primaryButton, out primaryPressed))
         {
-            moveDirection += currentCam.forward * rightTrigger; // Baktığın yöne doğru itme
+            if (primaryPressed && !lastPrimaryButtonState)
+            {
+                PlanetOrbit.GlobalPause = !PlanetOrbit.GlobalPause; // Toggle!
+                if (AudioManager.Instance != null) AudioManager.Instance.PlayUIClick();
+            }
         }
+        lastPrimaryButtonState = primaryPressed;
 
-        // Sol Tetik = Geri Fren/Geri Gitme
+        // Right Trigger Forward
+        float rightTrigger = 0f;
+        if (rightHand.TryGetFeatureValue(CommonUsages.trigger, out rightTrigger) && rightTrigger > 0.1f)
+            moveDirection += currentCam.forward * rightTrigger;
+
+        // Left Trigger Backward
         float leftTrigger = 0f;
         if (leftHand.TryGetFeatureValue(CommonUsages.trigger, out leftTrigger) && leftTrigger > 0.1f)
-        {
             moveDirection -= currentCam.forward * leftTrigger;
-        }
 
-        // 2. SAĞ ANALOG (YÖNÜ ÇEVİRME / YAW)
+        // Right Joystick: Yaw (X) & Up/Down (Y)
         Vector2 rightJoystick = Vector2.zero;
         if (rightHand.TryGetFeatureValue(CommonUsages.primary2DAxis, out rightJoystick))
         {
             if (Mathf.Abs(rightJoystick.x) > 0.1f)
-            {
                 transform.Rotate(0, rightJoystick.x * turnSpeed * Time.deltaTime, 0, Space.World);
-            }
+            
+            if (Mathf.Abs(rightJoystick.y) > 0.1f)
+                moveDirection += Vector3.up * rightJoystick.y;
         }
 
-        // 3. SOL ANALOG (STRAFE / YANLARA VE YUKARI AŞAĞI KAYMA)
+        // Left Joystick: Strafe (X) & Forward/Backward (Y)
         Vector2 leftJoystick = Vector2.zero;
         if (leftHand.TryGetFeatureValue(CommonUsages.primary2DAxis, out leftJoystick))
         {
             if (Mathf.Abs(leftJoystick.x) > 0.1f)
-            {
-                moveDirection += currentCam.right * leftJoystick.x; // Sağa Sola kay
-            }
+                moveDirection += currentCam.right * leftJoystick.x;
+            
             if (Mathf.Abs(leftJoystick.y) > 0.1f)
-            {
-                moveDirection += currentCam.forward * leftJoystick.y; // Yukarı Aşağı kay
-            }
+                moveDirection += currentCam.forward * leftJoystick.y;
         }
 
-        // Hareketi Uygula
+        // Apply Movement
         if (moveDirection.magnitude > 0.01f)
         {
             if (moveDirection.magnitude > 1f) moveDirection.Normalize();

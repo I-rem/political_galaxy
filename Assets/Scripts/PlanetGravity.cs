@@ -79,10 +79,10 @@ public class PlanetGravity : MonoBehaviour
         {
             float distance = Vector3.Distance(transform.position, playerTransform.position);
             
-            float pullRadius = 100f;
+            float pullRadius = 1500f;
             SphereCollider[] colliders = GetComponents<SphereCollider>();
             foreach(var c in colliders) {
-                if (c.isTrigger) pullRadius = c.radius * transform.localScale.x;
+                
             }
 
             float surfaceDistance = (transform.localScale.x / 2f) + 40f; 

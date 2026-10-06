@@ -18,7 +18,7 @@ public class PlanetOrbit : MonoBehaviour
     public Vector3 orbitAxis = Vector3.up;
 
     // Pause orbit when player is inside the gravity well
-    [HideInInspector] public bool isPaused = false;
+    [HideInInspector] public bool isPaused = false; public static bool GlobalPause = false;
 
     void Update()
     {
