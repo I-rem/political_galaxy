@@ -22,6 +22,7 @@ public class PoliticalViewData
 public class DataLoader : MonoBehaviour
 {
     public Dictionary<string, PoliticalViewData> PolarizingViews = new Dictionary<string, PoliticalViewData>();
+    public Dictionary<string, List<string>> KeywordTweets = new Dictionary<string, List<string>>();
 
     public void LoadData()
     {
@@ -84,12 +85,18 @@ public class DataLoader : MonoBehaviour
 
                 // Split keywords and add to list
                 string[] kwds = keywordsRaw.Split(',');
+                string tweetText = columns[5].Trim('\"'); // Get the tweet text
                 foreach (string kw in kwds)
                 {
                     string cleanedKwd = kw.Trim();
                     if (!string.IsNullOrEmpty(cleanedKwd))
                     {
                         viewData.Keywords.Add(cleanedKwd);
+                        if (!KeywordTweets.ContainsKey(cleanedKwd))
+                        {
+                            KeywordTweets[cleanedKwd] = new List<string>();
+                        }
+                        KeywordTweets[cleanedKwd].Add(tweetText);
                     }
                 }
             }

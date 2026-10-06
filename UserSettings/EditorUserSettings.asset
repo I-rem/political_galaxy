@@ -11,8 +11,17 @@ EditorUserSettings:
     QuickInstaller_com.unity.services.levelplay_installRecorded:
       value: 2550581500
       flags: 0
-    QuickInstaller_com.unity.services.vivox_installRecorded:
-      value: 2550581500
+    RecentlyUsedSceneGuid-0:
+      value: 5a5556035702080a0e585a724470064446164d787f7c2262742b4467e4e6603e
+      flags: 0
+    RecentlyUsedSceneGuid-1:
+      value: 5457560557015b0f59595d714071594445151a732f7a7e607b784530b3b8326a
+      flags: 0
+    RecentlyUsedSceneGuid-2:
+      value: 5a08575f5207595a0f5d59741173094444164f7d7d2a23317c7a4465bbe1646d
+      flags: 0
+    lightmappingBakingProfile:
+      value: 51
       flags: 0
     vcSharedLogLevel:
       value: 0d5e400f0650

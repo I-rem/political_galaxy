@@ -7,6 +7,8 @@ public class AudioManager : MonoBehaviour
     [Header("Audio Clips")]
     [Tooltip("Drag the background ambiance music here.")]
     public AudioClip ambianceClip;
+    [Tooltip("Kısık arka plan fısıltıları için buraya ses dosyası sürükleyin.")]
+    public AudioClip whispersClip;
     [Tooltip("Drag the UI button click sound here.")]
     public AudioClip uiClickClip;
     [Tooltip("Drag the sound for entering an orbit here.")]
@@ -14,6 +16,7 @@ public class AudioManager : MonoBehaviour
 
     private AudioSource bgmSource;
     private AudioSource sfxSource;
+    private AudioSource whispersSource;
 
     void Awake()
     {
@@ -46,6 +49,13 @@ public class AudioManager : MonoBehaviour
         bgmSource.playOnAwake = false;
         bgmSource.volume = 0.5f; // reasonable default volume
 
+        // Setup Whispers Source (Arka plan fısıltıları)
+        whispersSource = gameObject.AddComponent<AudioSource>();
+        whispersSource.loop = true;
+        whispersSource.playOnAwake = false;
+        whispersSource.volume = 0.35f; // Fısıltı olduğu için kısık ses
+        whispersSource.pitch = 0.85f; // Fısıltıyı biraz daha derin ve tekinsiz yapmak için pitch düşürüldü
+
         // Setup SFX Source
         sfxSource = gameObject.AddComponent<AudioSource>();
         sfxSource.loop = false;
@@ -56,6 +66,12 @@ public class AudioManager : MonoBehaviour
         {
             bgmSource.clip = ambianceClip;
             bgmSource.Play();
+        }
+
+        if (whispersClip != null)
+        {
+            whispersSource.clip = whispersClip;
+            whispersSource.Play();
         }
     }
 

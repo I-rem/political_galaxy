@@ -70,7 +70,6 @@ public class SpaceFPSController : MonoBehaviour
     {
         if (Time.timeScale == 0f) return; // Prevent movement/looking while game paused (IntroScreen)
 
-        // UI Menüsü kapalıyken (fare kilitliyken) ekran kamerayı çevir.
         if (Cursor.lockState == CursorLockMode.Locked)
         {
             if (crosshairCanvas != null && !crosshairCanvas.activeSelf) 
@@ -83,6 +82,34 @@ public class SpaceFPSController : MonoBehaviour
             {
                 mouseX = Mouse.current.delta.x.ReadValue() * mouseSensitivity * 0.05f;
                 mouseY = Mouse.current.delta.y.ReadValue() * mouseSensitivity * 0.05f;
+                
+                // RAYCAST FOR KEYWORDS
+                if (Mouse.current.leftButton.wasPressedThisFrame)
+                {
+                    Camera cam = Camera.main;
+                    if (cam != null)
+                    {
+                        Ray ray = new Ray(cam.transform.position, cam.transform.forward);
+                        RaycastHit hit;
+                        if (Physics.Raycast(ray, out hit, 2000f))
+                        {
+                            OrbitingKeyword kw = hit.collider.GetComponent<OrbitingKeyword>();
+                            if (kw != null)
+                            {
+                                TextMesh tm = kw.GetComponent<TextMesh>();
+                                if (tm != null && TweetUIManager.Instance != null)
+                                {
+                                    string keywordStr = tm.text.Trim();
+                                    DataLoader dl = FindObjectOfType<DataLoader>();
+                                    if (dl != null && dl.KeywordTweets.ContainsKey(keywordStr))
+                                    {
+                                        TweetUIManager.Instance.ShowKeywordTweets(keywordStr, dl.KeywordTweets[keywordStr]);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
             transform.Rotate(0, mouseX, 0);
@@ -99,6 +126,15 @@ public class SpaceFPSController : MonoBehaviour
             // Eğer UI açık ve menüdeysek crosshair ortadan kalksın
             if (crosshairCanvas != null && crosshairCanvas.activeSelf) 
                 crosshairCanvas.SetActive(false);
+                
+            // CLOSE UI
+            if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+            {
+                if (TweetUIManager.Instance != null && TweetUIManager.Instance.IsActive())
+                {
+                    TweetUIManager.Instance.CloseSidebar();
+                }
+            }
         }
 
         float moveX = 0f;

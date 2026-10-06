@@ -10,11 +10,10 @@ public class PlanetGravity : MonoBehaviour
     public ParticleSystem PlanetPS;
     public Renderer PlanetRenderer;
     public List<OrbitingKeyword> OrbitingKeywords = new List<OrbitingKeyword>();
+    [HideInInspector] public PlanetOrbit PlanetOrbit;
     
     public float gravityForce = 156f; // 2x artırıldı (78 -> 156)
     
-    private GameObject infoCanvas;
-    private Text infoText;
     private bool isPlayerAtCore = false;
     private bool hasBeenRead = false;
 
@@ -23,7 +22,7 @@ public class PlanetGravity : MonoBehaviour
         string catLower = category.ToLower();
         if (catLower.Contains("religious"))
             return "Religious Extremism is the advocacy of radical religious ideologies that reject moderate interpretations and often call for the total restructuring of society according to strict, fundamentalist religious laws.";
-        if (catLower.Contains("populism"))
+        if (catLower.Contains("populism") || catLower.Contains("maga"))
             return "A political approach that claims to support \"the ordinary people\" against a \"corrupt elite.\" It simplifies complex issues into a moral struggle between the virtuous public and a dishonest establishment.";
         if (catLower.Contains("gender"))
             return "Gender Essentialism Extremism is a term used to describe a radical adherence to the belief that men and women have fixed, innate, and unchangeable biological natures that dictate their roles, behaviors, and social status.";
@@ -31,163 +30,164 @@ public class PlanetGravity : MonoBehaviour
             return "Ethnonationalism is a form of nationalism where the nation is defined specifically by a shared ethnic identity rather than shared political principles or citizenship.";
         if (catLower.Contains("eco"))
             return "Eco-authoritarianism is a political concept that suggests democratic systems are too slow or inefficient to handle the climate crisis, proposing instead that an authoritarian government must impose strict environmental regulations to ensure human survival.";
-        
+        if (catLower.Contains("progressive"))
+            return "The Progressive Left advocates for structural transformation of economic systems to address inequality. Core positions include universal healthcare, taxing extreme wealth, student debt cancellation, workers' rights, and robust climate legislation.";
+        if (catLower.Contains("libertarian"))
+            return "Libertarian Right ideology holds that individual liberty is the supreme political value. It opposes taxation as coercive, advocates for free markets without regulation, and views government intervention — social or economic — as inherently tyrannical.";
+        if (catLower.Contains("identitarian"))
+            return "The Identitarian Left frames politics primarily through the lens of race, colonialism, and systemic oppression. It advocates for deconstructing whiteness, reparations, police abolition, and centering historically marginalized voices in all political discourse.";
+
         return "A deep dive view mapping specific polarized perspectives inside social systems.";
     }
 
     void Start()
     {
-        CreateCanvasWithFixedText();
+        // Eski canvas sistemi iptal edildi, artık telefonda gösterilecek.
     }
 
-    void CreateCanvasWithFixedText()
-    {
-        infoCanvas = new GameObject("InfoCanvas_" + ViewData.CategoryName);
-        // HEMEN kapat — Image default beyaz rengiyle 1 kare önce görünmesin
-        infoCanvas.SetActive(false);
-
-        Canvas canvas = infoCanvas.AddComponent<Canvas>();
-        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        canvas.sortingOrder = 100;
-        CanvasScaler cScaler = infoCanvas.AddComponent<CanvasScaler>();
-        cScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        cScaler.referenceResolution = new Vector2(1920, 1080);
-        // GraphicRaycaster kaldırıldı (gereksiz, zaten Scene Space Overlay)
-
-        GameObject panelObj = new GameObject("Panel");
-        panelObj.transform.SetParent(infoCanvas.transform, false);
-        Image bg = panelObj.AddComponent<Image>();
-        bg.color = new Color(0.05f, 0.05f, 0.05f, 0.98f);
-        RectTransform panelRect = panelObj.GetComponent<RectTransform>();
-        panelRect.anchorMin = new Vector2(0.15f, 0.15f);
-        panelRect.anchorMax = new Vector2(0.85f, 0.85f);
-        panelRect.offsetMin = Vector2.zero;
-        panelRect.offsetMax = Vector2.zero;
-
-        // Kaydırma barı vb kaldırıldı. Sadece Text objesi eklendi.
-        GameObject textObj = new GameObject("Text");
-        textObj.transform.SetParent(panelObj.transform, false);
-        infoText = textObj.AddComponent<Text>();
-        
-        Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        if(font == null) font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-        
-        infoText.font = font;
-        infoText.color = Color.white;
-        infoText.fontSize = 28; // Increased for better readability
-        infoText.lineSpacing = 1.3f;
-        infoText.alignment = TextAnchor.MiddleCenter;
-        
-        RectTransform textRect = infoText.GetComponent<RectTransform>();
-        textRect.anchorMin = new Vector2(0.05f, 0.05f);
-        textRect.anchorMax = new Vector2(0.95f, 0.95f);
-        textRect.offsetMin = Vector2.zero;
-        textRect.offsetMax = Vector2.zero;
-
-        List<string> uniqueKeywords = new List<string>();
-        foreach(string kw in ViewData.Keywords) {
-            if(!uniqueKeywords.Contains(kw)) uniqueKeywords.Add(kw);
-            if(uniqueKeywords.Count >= 20) break; // Sığması için tasarruf
-        }
-
-        string explanationText = GetExplanationForCategory(ViewData.CategoryName);
-
-        string description = $"<b><size=48><color=#ffffff>{ViewData.CategoryName}</color></size></b>\n\n" +
-                             $"<b><color=#ffffff>Explanation:</color></b>\n" +
-                             $"<color=#ffffff>{explanationText}</color>\n\n" +
-                             $"<b><color=#ffffff>Keywords:</color></b>\n" +
-                             $"<color=#ffffff>{string.Join(", ", uniqueKeywords)}</color>\n\n" +
-                             $"<b><color=#ffffff>Gravity Mass (Tweets):</color></b> <color=#ffffff>{ViewData.TweetCount}</color>\n\n" +
-                             $"<i><color=#aaaaaa>(Click / Press E or ESC / Move away to exit)</color></i>";
-
-        infoText.text = description;
-        // SetActive(false) zaten metodun başında çağrılıyor - tekrar gerekmez
-    }
+    private bool wasPulling = false;
 
     void Update()
     {
-        if (isPlayerAtCore && Keyboard.current != null)
+        // 1. Çekirdekteyken paneli kapatma kontrolleri
+        if (isPlayerAtCore)
         {
-            if (Keyboard.current.escapeKey.wasPressedThisFrame ||
-                Keyboard.current.enterKey.wasPressedThisFrame ||
-                Keyboard.current.eKey.wasPressedThisFrame ||
-                (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame))
+            bool triggerClose = false;
+            if (Keyboard.current != null && (Keyboard.current.escapeKey.wasPressedThisFrame || Keyboard.current.enterKey.wasPressedThisFrame || Keyboard.current.eKey.wasPressedThisFrame))
+                triggerClose = true;
+            if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+                triggerClose = true;
+
+            UnityEngine.XR.InputDevice rightHand = UnityEngine.XR.InputDevices.GetDeviceAtXRNode(UnityEngine.XR.XRNode.RightHand);
+            float triggerVal;
+            if (rightHand.TryGetFeatureValue(UnityEngine.XR.CommonUsages.trigger, out triggerVal) && triggerVal > 0.5f)
+                triggerClose = true;
+
+            if (triggerClose)
             {
                 ClosePanelAndResume();
+            }
+        }
+
+        // 2. VRFlightController'ı Bularak Kesin Pozisyon Takibi
+        VRFlightController vrFlight = FindObjectOfType<VRFlightController>();
+        Transform playerTransform = vrFlight != null ? vrFlight.transform : null;
+        
+        if (playerTransform == null && Camera.main != null) playerTransform = Camera.main.transform;
+
+        if (playerTransform != null)
+        {
+            float distance = Vector3.Distance(transform.position, playerTransform.position);
+            
+            float pullRadius = 100f;
+            SphereCollider[] colliders = GetComponents<SphereCollider>();
+            foreach(var c in colliders) {
+                if (c.isTrigger) pullRadius = c.radius * transform.localScale.x;
+            }
+
+            float surfaceDistance = (transform.localScale.x / 2f) + 40f; 
+
+            if (distance < pullRadius) 
+            {
+                wasPulling = true;
+                if (distance > surfaceDistance)
+                {
+                    // Çekiliyor
+                    Vector3 direction = (transform.position - playerTransform.position).normalized;
+                    
+                    float pullStrength = gravityForce * (1f - (distance / pullRadius));
+                    pullStrength = Mathf.Max(pullStrength, gravityForce * 0.35f);
+                    pullStrength = Mathf.Clamp(pullStrength, 10f, gravityForce * 1.15f); 
+
+                    if (vrFlight != null)
+                    {
+                        vrFlight.transform.position += direction * pullStrength * Time.deltaTime;
+                    }
+                    else
+                    {
+                        playerTransform.position += direction * pullStrength * Time.deltaTime;
+                    }
+
+                    if (GravityWindEffect.Instance != null)
+                    {
+                        GravityWindEffect.Instance.SetPullStrength(pullStrength, PlanetColor, transform.position);
+                    }
+                    
+                    if (isPlayerAtCore && distance > surfaceDistance + 25f)
+                    {
+                        ClosePanelAndResume();
+                        isPlayerAtCore = false;
+                    }
+                }
+                else
+                {
+                    // Çekirdeğe Ulaşıldı
+                    if (!isPlayerAtCore)
+                    {
+                        if (GravityWindEffect.Instance != null)
+                        {
+                            GravityWindEffect.Instance.StopWind();
+                        }
+
+                        // Pause orbit so the planet doesn't drift away while player is reading
+                        if (PlanetOrbit != null) PlanetOrbit.isPaused = true;
+
+                        isPlayerAtCore = true;
+
+                        List<string> uniqueKeywords = new List<string>();
+                        foreach(string kw in ViewData.Keywords) {
+                            if(!uniqueKeywords.Contains(kw)) uniqueKeywords.Add(kw);
+                            if(uniqueKeywords.Count >= 15) break;
+                        }
+                        
+                        if (PlanetManager.Instance != null)
+                        {
+                            PlanetManager.Instance.ShowPlanetInfoOnPhone(
+                                ViewData.CategoryName,
+                                GetExplanationForCategory(ViewData.CategoryName),
+                                string.Join(", ", uniqueKeywords),
+                                ViewData.TweetCount.ToString()
+                            );
+                        }
+                        
+                        if (AudioManager.Instance != null)
+                        {
+                            AudioManager.Instance.PlayOrbitEntry();
+                        }
+
+                        ChangeToReadState();
+                    }
+                }
+            }
+            else
+            {
+                // Menzil dışındayız
+                if (isPlayerAtCore)
+                {
+                    ClosePanelAndResume();
+                    isPlayerAtCore = false;
+                    // Resume orbit when player flies away
+                    if (PlanetOrbit != null) PlanetOrbit.isPaused = false;
+                }
+                
+                // Sadece BU gezegen çekiyorken çıktıysak rüzgarı durdur (Diğer gezegenlerin rüzgarını kesmemek için)
+                if (wasPulling)
+                {
+                    if (GravityWindEffect.Instance != null && !isPlayerAtCore)
+                    {
+                        GravityWindEffect.Instance.StopWind(); 
+                    }
+                    wasPulling = false;
+                }
             }
         }
     }
 
     private void ClosePanelAndResume()
     {
-        infoCanvas.SetActive(false);
+        if (PlanetManager.Instance != null) PlanetManager.Instance.HidePlanetInfoOnPhone();
         Cursor.lockState = CursorLockMode.Locked;
         ChangeToReadState();
-    }
-
-    private void OnTriggerStay(Collider other)
-    {
-        if (other.CompareTag("Player"))
-        {
-            float distance = Vector3.Distance(transform.position, other.transform.position);
-            // Sıkışma hissi yaşanmaması için hitbox limiti büyütüldü
-            float surfaceDistance = (transform.localScale.x / 2f) + 36f; 
-
-            if (distance > surfaceDistance)
-            {
-                Vector3 direction = (transform.position - other.transform.position).normalized;
-                CharacterController cc = other.GetComponent<CharacterController>();
-                if (cc != null)
-                {
-                    float pullStrength = gravityForce * (1f - (distance / (GetComponent<SphereCollider>().radius * transform.localScale.x)));
-                    // Min çekim gücü (gravityForce'un %30'u) — böylece oyuncu her zaman çekimi hisseder
-                    pullStrength = Mathf.Max(pullStrength, gravityForce * 0.3f);
-                    pullStrength = Mathf.Clamp(pullStrength, 5f, gravityForce);
-                    cc.Move(direction * pullStrength * Time.deltaTime);
-                }
-                
-                if (isPlayerAtCore && distance > surfaceDistance + 25f)
-                {
-                    ClosePanelAndResume();
-                    isPlayerAtCore = false;
-                }
-            }
-            else
-            {
-                if (!isPlayerAtCore)
-                {
-                    isPlayerAtCore = true;
-                    // Artık basit açılış mekanizması
-                    infoCanvas.SetActive(true);
-                    
-                    if (AudioManager.Instance != null)
-                    {
-                        AudioManager.Instance.PlayOrbitEntry();
-                    }
-
-                    Cursor.lockState = CursorLockMode.None;
-                    Cursor.visible = true;
-
-                    SpaceFPSController fps = other.GetComponent<SpaceFPSController>();
-                    if (fps != null)
-                    {
-                        fps.StopMovement();
-                    }
-                }
-            }
-        }
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        if (other.CompareTag("Player"))
-        {
-            if (isPlayerAtCore)
-            {
-                ClosePanelAndResume();
-            }
-            isPlayerAtCore = false;
-        }
     }
 
     private void ChangeToReadState()

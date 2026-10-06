@@ -20,6 +20,9 @@ public class OrbitingKeyword : MonoBehaviour
         tm.font = font;
         tm.GetComponent<Renderer>().material = tm.font.material;
 
+        // Add BoxCollider for Raycast
+        BoxCollider bc = gameObject.AddComponent<BoxCollider>();
+
         orbitAxis = Random.onUnitSphere;
     }
 

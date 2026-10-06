@@ -1,20 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-7388792950710566899
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d236b7d11115f2143951f1e14045df39, type: 3}
-  m_Name: Android Settings
-  m_EditorClassIdentifier: Unity.XR.Management::UnityEngine.XR.Management.XRGeneralSettings
-  m_Manager: {fileID: 4290744008241279736}
-  m_InitManagerOnStart: 1
---- !u!114 &-3655803160121770410
+--- !u!114 &-4891097101990724248
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -29,8 +15,9 @@ MonoBehaviour:
   m_RequiresSettingsUpdate: 0
   m_AutomaticLoading: 0
   m_AutomaticRunning: 0
-  m_Loaders: []
---- !u!114 &-1234522803869288593
+  m_Loaders:
+  - {fileID: 11400000, guid: 23a6e9dba3282f048b41836d59e3d4d4, type: 2}
+--- !u!114 &-4110290244076471300
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -42,7 +29,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d236b7d11115f2143951f1e14045df39, type: 3}
   m_Name: Standalone Settings
   m_EditorClassIdentifier: Unity.XR.Management::UnityEngine.XR.Management.XRGeneralSettings
-  m_Manager: {fileID: -3655803160121770410}
+  m_Manager: {fileID: -4891097101990724248}
   m_InitManagerOnStart: 1
 --- !u!114 &11400000
 MonoBehaviour:
@@ -60,23 +47,6 @@ MonoBehaviour:
   Values: []
   m_SettingsPerBuildTarget:
   - buildTarget: 1
-    settings: {fileID: -1234522803869288593}
+    settings: {fileID: -4110290244076471300}
   - buildTarget: 7
-    settings: {fileID: -7388792950710566899}
---- !u!114 &4290744008241279736
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4c3631f5e58749a59194e0cf6baf6d5, type: 3}
-  m_Name: Android Providers
-  m_EditorClassIdentifier: Unity.XR.Management::UnityEngine.XR.Management.XRManagerSettings
-  m_RequiresSettingsUpdate: 0
-  m_AutomaticLoading: 0
-  m_AutomaticRunning: 0
-  m_Loaders:
-  - {fileID: 11400000, guid: abd3a124bf749ca4d9c7cb9a4270a639, type: 2}
+    settings: {fileID: 11400000, guid: 4097652afea74824a8b005cd1c797f90, type: 2}

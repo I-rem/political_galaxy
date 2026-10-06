@@ -41,23 +41,8 @@ providers = {
 		priority = 90
 		defaultAction = null
 	}
-	lightmaps = {
-		active = true
-		priority = 100
-		defaultAction = null
-	}
-	uicustom = {
-		active = true
-		priority = 100
-		defaultAction = null
-	}
-	uiengine = {
-		active = true
-		priority = 100
-		defaultAction = null
-	}
-	"project-auditor-issues" = {
-		active = true
+	performance = {
+		active = false
 		priority = 100
 		defaultAction = null
 	}
@@ -69,16 +54,6 @@ providers = {
 	profilermarkers = {
 		active = false
 		priority = 100
-		defaultAction = null
-	}
-	performance = {
-		active = false
-		priority = 100
-		defaultAction = null
-	}
-	uiuxml = {
-		active = true
-		priority = 200
 		defaultAction = null
 	}
 	log = {
@@ -107,4 +82,3 @@ disabledIndexers = ""
 minIndexVariations = 2
 findProviderIndexHelper = true
 itemIconSize = 32
-version = 1
