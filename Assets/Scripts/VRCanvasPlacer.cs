@@ -17,22 +17,22 @@ public class VRCanvasPlacer : MonoBehaviour
         Camera cam = Camera.main;
         if (cam != null)
         {
-            // Flatten the forward vector so the UI stays upright at eye level
-            // rather than tilting into the floor/ceiling if the user looks up/down.
+            // Flatten the forward vector so the UI stays upright
             Vector3 forwardFlat = new Vector3(cam.transform.forward.x, 0, cam.transform.forward.z).normalized;
             
-            // Fallback if they are looking exactly straight up or down
             if (forwardFlat.sqrMagnitude < 0.001f) 
                 forwardFlat = cam.transform.forward;
 
+            // Maintain the camera's Y position (eye level) instead of dropping to the floor
             Vector3 targetPosition = cam.transform.position + (forwardFlat * distance);
+            targetPosition.y = cam.transform.position.y;
             
-            // Smoothly glide the UI to stay in front of the user's gaze
-            transform.position = Vector3.Lerp(transform.position, targetPosition, Time.deltaTime * smoothSpeed);
+            // Use unscaledDeltaTime because Time.timeScale is 0 during the Intro!
+            transform.position = Vector3.Lerp(transform.position, targetPosition, Time.unscaledDeltaTime * smoothSpeed);
             
             // Look exactly at the camera
             transform.LookAt(cam.transform.position);
-            transform.Rotate(0, 180, 0); // Correct the Canvas backwards rendering
+            transform.Rotate(0, 180, 0); 
         }
     }
 }
