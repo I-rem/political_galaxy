@@ -6,7 +6,7 @@ public class OrbitingKeyword : MonoBehaviour
     public float orbitSpeed = 20f;
     private Vector3 orbitAxis;
 
-    public void SetupText(string text, Color color, int fontSize = 90, float characterSize = 0.45f)
+    public void SetupText(string text, Color color, int fontSize = 350, float characterSize = 0.12f)
     {
         TextMesh tm = gameObject.AddComponent<TextMesh>();
         tm.text = text;

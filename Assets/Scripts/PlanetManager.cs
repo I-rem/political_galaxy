@@ -517,9 +517,9 @@ public class PlanetManager : MonoBehaviour
                 GameObject offsetObj = new GameObject("VRWristPoint");
                 offsetObj.transform.SetParent(leftController.transform, false);
                 // Bilek noktası: Kumandanın 15 cm gerisi (kolda) ve biraz üstü
-                offsetObj.transform.localPosition = new Vector3(0.02f, 0.08f, -0.15f);
+                offsetObj.transform.localPosition = new Vector3(0.0f, 0.05f, -0.1f);
                 // Kola saat takmışsınız gibi açısı ayarlandı
-                offsetObj.transform.localRotation = Quaternion.Euler(60f, -15f, 0f);
+                offsetObj.transform.localRotation = Quaternion.Euler(35f, 0f, 0f);
                 vrWristPoint = offsetObj.transform;
             }
             return vrWristPoint; // Sanal kol oluşturmadan direkt gerçek eli döndür
@@ -774,7 +774,7 @@ public class PlanetManager : MonoBehaviour
 
         // --- YENİ EKLENEN KISIM: Force Field (Güç Alanı) Etkileşimi ---
         var externalForces = ps.externalForces;
-        externalForces.enabled = true;
+        externalForces.enabled = false;
         externalForces.multiplier = 1f;
 
         starfield.GetComponent<ParticleSystemRenderer>().material = new Material(Shader.Find("Sprites/Default"));
@@ -1075,8 +1075,8 @@ public class PlanetManager : MonoBehaviour
         TextMesh tm         = labelObj.AddComponent<TextMesh>();
         tm.text             = title;
         tm.color            = color * 1.5f; tm.color = new Color(tm.color.r, tm.color.g, tm.color.b, 1f);
-        tm.fontSize         = 120;
-        tm.characterSize    = 0.35f;
+        tm.fontSize         = 400;
+        tm.characterSize    = 0.1f;
         tm.anchor           = TextAnchor.MiddleCenter;
         tm.fontStyle        = FontStyle.Bold;
         Font f              = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");

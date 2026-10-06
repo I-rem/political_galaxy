@@ -92,7 +92,7 @@ public class VRFlightController : MonoBehaviour
             }
             if (Mathf.Abs(leftJoystick.y) > 0.1f)
             {
-                moveDirection += currentCam.up * leftJoystick.y; // Yukarı Aşağı kay
+                moveDirection += currentCam.forward * leftJoystick.y; // Yukarı Aşağı kay
             }
         }
 
