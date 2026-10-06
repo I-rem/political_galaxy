@@ -2413,6 +2413,7 @@ GameObject:
   - component: {fileID: 2030351777}
   - component: {fileID: 2030351776}
   - component: {fileID: 2030351778}
+  - component: {fileID: 2030351779}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: Untagged
@@ -2675,6 +2676,18 @@ ParticleSystemForceField:
         m_RotationOrder: 4
     m_MultiplyDragByParticleSize: 1
     m_MultiplyDragByParticleVelocity: 1
+--- !u!114 &2030351779
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2030351774}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2b8474658ac3220438bd2ff7cfb50e51, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HelmetHUD
 --- !u!1 &2110282836
 GameObject:
   m_ObjectHideFlags: 0
