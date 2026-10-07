@@ -4,6 +4,21 @@ using System.Collections.Generic;
 
 public class PlanetManager : MonoBehaviour
 {
+    public static string GetTranslatedCategoryName(string category)
+    {
+        string lower = category.ToLower();
+        if (lower.Contains("religious")) return "Dini Aşırıcılık";
+        if (lower.Contains("maga") || lower.Contains("populism")) return "MAGA / Popülizm";
+        if (lower.Contains("gender")) return "Cinsiyet Özcülüğü";
+        if (lower.Contains("ethno")) return "Etnomilliyetçilik";
+        if (lower.Contains("eco")) return "Eko-Otoriteryenizm";
+        if (lower.Contains("progressive")) return "İlerici Sol";
+        if (lower.Contains("libertarian")) return "Özgürlükçü Sağ";
+        if (lower.Contains("identitarian")) return "Kimlikçi Sol";
+        if (lower.Contains("bridge")) return "Köprü Gezegeni";
+        return category;
+    }
+
     public static PlanetManager Instance;
     public DataLoader dataLoader;
 
@@ -167,7 +182,7 @@ public class PlanetManager : MonoBehaviour
 
                     UnityEngine.UI.Text catText = catObj.AddComponent<UnityEngine.UI.Text>();
                     catText.font     = f;
-                    catText.text     = category + " ( )";
+                    catText.text = GetTranslatedCategoryName(category) + " ( )";
                     catText.color    = new Color(0.8f, 0.8f, 0.85f, 1f);
                     catText.fontSize = 26; // Reduced to fit 8 items
                     checklistTexts.Add(category, catText);
@@ -359,7 +374,7 @@ public class PlanetManager : MonoBehaviour
             catObj.transform.SetParent(bgObj.transform, false);
             UnityEngine.UI.Text catText = catObj.AddComponent<UnityEngine.UI.Text>();
             catText.font     = f;
-            catText.text     = category + " ( )";
+            catText.text = GetTranslatedCategoryName(category) + " ( )";
             catText.color    = new Color(0.8f, 0.8f, 0.85f, 1f);
             catText.fontSize = 20; // Reduced to fit 8 items
             checklistTexts.Add(category, catText);
@@ -408,7 +423,7 @@ public class PlanetManager : MonoBehaviour
     {
         if (checklistTexts.ContainsKey(categoryName) && !checklistTexts[categoryName].text.Contains("(O)"))
         {
-            checklistTexts[categoryName].text = "<color=#00ccff><b>" + categoryName + "</b> (O)</color>";
+            checklistTexts[categoryName].text = "<color=#00ccff><b>" + GetTranslatedCategoryName(categoryName) + "</b> (O)</color>";
             visitedCount++;
             
             if (visitedCount >= checklistTexts.Count)

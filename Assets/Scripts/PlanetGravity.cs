@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using System.Collections.Generic;
@@ -17,28 +17,45 @@ public class PlanetGravity : MonoBehaviour
     private bool isPlayerAtCore = false;
     private bool hasBeenRead = false;
 
-    private string GetExplanationForCategory(string category)
+    public string GetExplanationForCategory(string category)
     {
         string catLower = category.ToLower();
         if (catLower.Contains("religious"))
-            return "Religious Extremism is the advocacy of radical religious ideologies that reject moderate interpretations and often call for the total restructuring of society according to strict, fundamentalist religious laws.";
+            return "Dini Aşırıcılık, ılımlı yorumları reddeden ve genellikle toplumun katı köktendinci yasalara göre tamamen yeniden yapılandırılmasını savunan radikal dini ideolojilerdir.";
         if (catLower.Contains("populism") || catLower.Contains("maga"))
-            return "A political approach that claims to support \"the ordinary people\" against a \"corrupt elite.\" It simplifies complex issues into a moral struggle between the virtuous public and a dishonest establishment.";
+            return "'Yozlaşmış elitlere' karşı 'sıradan halkı' desteklediğini iddia eden siyasi bir yaklaşım. Karmaşık sorunları, erdemli halk ile dürüst olmayan müesses nizam arasındaki ahlaki bir mücadeleye indirger.";
         if (catLower.Contains("gender"))
-            return "Gender Essentialism Extremism is a term used to describe a radical adherence to the belief that men and women have fixed, innate, and unchangeable biological natures that dictate their roles, behaviors, and social status.";
+            return "Aşırı Cinsiyet Özcülüğü, erkeklerin ve kadınların rollerini, davranışlarını ve sosyal statülerini belirleyen sabit, doğuştan gelen ve değişmez biyolojik doğaları olduğu inancına radikal bir şekilde bağlılığı tanımlamak için kullanılan bir terimdir.";
         if (catLower.Contains("ethno"))
-            return "Ethnonationalism is a form of nationalism where the nation is defined specifically by a shared ethnic identity rather than shared political principles or citizenship.";
+            return "Etnomilliyetçilik, ulusun ortak siyasi ilkeler veya vatandaşlıktan ziyade doğrudan ortak bir etnik kimlikle tanımlandığı bir milliyetçilik biçimidir.";
         if (catLower.Contains("eco"))
-            return "Eco-authoritarianism is a political concept that suggests democratic systems are too slow or inefficient to handle the climate crisis, proposing instead that an authoritarian government must impose strict environmental regulations to ensure human survival.";
+            return "Eko-Otoriteryenizm, demokratik sistemlerin iklim krizini ele almak için çok yavaş veya verimsiz olduğunu öne süren ve bunun yerine insanlığın hayatta kalmasını sağlamak için otoriter bir hükümetin katı çevre düzenlemeleri dayatması gerektiğini savunan siyasi bir kavramdır.";
         if (catLower.Contains("progressive"))
-            return "The Progressive Left advocates for structural transformation of economic systems to address inequality. Core positions include universal healthcare, taxing extreme wealth, student debt cancellation, workers' rights, and robust climate legislation.";
+            return "İlerici Sol, eşitsizliği gidermek için ekonomik sistemlerin yapısal dönüşümünü savunur. Temel görüşleri arasında evrensel sağlık hizmetleri, aşırı servetin vergilendirilmesi, öğrenci borçlarının iptal edilmesi, işçi hakları ve güçlü iklim yasaları yer alır.";
         if (catLower.Contains("libertarian"))
-            return "Libertarian Right ideology holds that individual liberty is the supreme political value. It opposes taxation as coercive, advocates for free markets without regulation, and views government intervention — social or economic — as inherently tyrannical.";
+            return "Özgürlükçü Sağ ideoloji, bireysel özgürlüğün en yüce siyasi değer olduğunu savunur. Vergiyi zorbalık olarak görür, düzenlemeye tabi olmayan serbest piyasaları savunur ve hükümet müdahalesini - sosyal veya ekonomik olsun - doğası gereği zorba olarak değerlendirir.";
         if (catLower.Contains("identitarian"))
-            return "The Identitarian Left frames politics primarily through the lens of race, colonialism, and systemic oppression. It advocates for deconstructing whiteness, reparations, police abolition, and centering historically marginalized voices in all political discourse.";
+            return "Kimlikçi Sol, siyaseti öncelikle ırk, sömürgecilik ve sistemik baskı merceğinden çerçeveler. Beyazlığın yapı sökümünü, tazminatları, polisin kaldırılmasını ve siyasi söylemlerde tarihsel olarak marjinalleştirilmiş sesleri merkeze almayı savunur.";
 
-        return "A deep dive view mapping specific polarized perspectives inside social systems.";
+        return "Sosyal sistemler içindeki belirli kutuplaşmış perspektiflerin haritasını çıkaran derinlemesine bir görünüm.";
     }
+
+
+    public static string GetTranslatedCategoryName(string category)
+    {
+        string lower = category.ToLower();
+        if (lower.Contains("religious")) return "Dini Aşırıcılık";
+        if (lower.Contains("maga") || lower.Contains("populism")) return "MAGA / Popülizm";
+        if (lower.Contains("gender")) return "Cinsiyet Özcülüğü";
+        if (lower.Contains("ethno")) return "Etnomilliyetçilik";
+        if (lower.Contains("eco")) return "Eko-Otoriteryenizm";
+        if (lower.Contains("progressive")) return "İlerici Sol";
+        if (lower.Contains("libertarian")) return "Özgürlükçü Sağ";
+        if (lower.Contains("identitarian")) return "Kimlikçi Sol";
+        if (lower.Contains("bridge")) return "Köprü Gezegeni";
+        return category;
+    }
+
 
     void Start()
     {
@@ -143,7 +160,7 @@ public class PlanetGravity : MonoBehaviour
                         if (PlanetManager.Instance != null)
                         {
                             PlanetManager.Instance.ShowPlanetInfoOnPhone(
-                                ViewData.CategoryName,
+                                GetTranslatedCategoryName(ViewData.CategoryName),
                                 GetExplanationForCategory(ViewData.CategoryName),
                                 string.Join(", ", uniqueKeywords),
                                 ViewData.TweetCount.ToString()
