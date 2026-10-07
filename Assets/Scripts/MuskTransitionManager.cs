@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -98,18 +98,18 @@ public class MuskTransitionManager : MonoBehaviour
             if (toXEra)
             {
                 PlanetManager.Instance.ShowPlanetInfoOnPhone(
-                    "<color=#ff0000>SYSTEM OVERRIDE</color>",
-                    "<b>PLATFORM OWNERSHIP CHANGED.\nNEW ALGORITHM DEPLOYED.</b>\n\nPolarization limits unlocked. Echo chambers amplifying.",
-                    "algorithm, x, takeover, amplification",
-                    "<color=#ff0000>ERROR: INFINITE</color>"
+                    "<color=#ff0000>SİSTEM MÜDAHALESİ</color>",
+                    "<b>PLATFORM SAHİPLİĞİ DEĞİŞTİ.\nYENİ ALGORİTMA DEVREDE.</b>\n\nKutuplaşma sınırları kaldırıldı. Yankı odaları güçleniyor.",
+                    "algoritma, x, el koyma, güçlendirme",
+                    "<color=#ff0000>HATA: SONSUZ</color>"
                 );
             }
             else
             {
                 PlanetManager.Instance.ShowPlanetInfoOnPhone(
-                    "<color=#00ccff>SYSTEM RESTORED</color>",
-                    "<b>REVERTING TO LEGACY ALGORITHM.</b>\n\nPolarization weights normalized. Returning to pre-2022 standards.",
-                    "legacy, twitter, standard, timeline",
+                    "<color=#00ccff>SİSTEM GERİ YÜKLENDİ</color>",
+                    "<b>ESKİ ALGORİTMAYA DÖNÜLÜYOR.</b>\n\nKutuplaşma ağırlıkları normale döndü. 2022 öncesi standartlara dönülüyor.",
+                    "eski, twitter, standart, zaman tüneli",
                     "<color=#00ccff>NORMAL</color>"
                 );
             }
@@ -173,7 +173,7 @@ public class MuskTransitionManager : MonoBehaviour
                 Text t = titleTrans.GetComponent<Text>();
                 if (t != null)
                 {
-                    t.text = toXEra ? "<b><size=30>Platform X - New Order</size></b>" : "<b><size=30>Twitter Era</size></b>";
+                    t.text = toXEra ? "<b><size=30>Platform X - Yeni Düzen</size></b>" : "<b><size=30>Twitter Dönemi</size></b>";
                     t.color = toXEra ? new Color(0.9f, 0.2f, 0.2f) : Color.white;
                 }
             }

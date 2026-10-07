@@ -440,6 +440,7 @@ GameObject:
   - component: {fileID: 886345873}
   - component: {fileID: 886345872}
   - component: {fileID: 886345875}
+  - component: {fileID: 886345876}
   m_Layer: 0
   m_Name: XR Origin (VR)
   m_TagString: Untagged
@@ -508,6 +509,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.XR.Interaction.Toolkit::UnityEngine.XR.Interaction.Toolkit.Inputs.InputActionManager
   m_ActionAssets: []
+--- !u!114 &886345876
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 886345871}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4404d441136ba894c80bacb3ffce086c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CustomVignetteController
+  fadeSpeed: 5
+  maxVignetteAlpha: 0.95
+  speedThreshold: 0.5
+  maxSpeedForFullVignette: 40
 --- !u!1 &1273531698
 GameObject:
   m_ObjectHideFlags: 0

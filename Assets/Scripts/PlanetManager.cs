@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 
@@ -321,7 +321,7 @@ public class PlanetManager : MonoBehaviour
         startBtnTextObj.transform.SetParent(startBtnObj.transform, false);
         Text startBtnText = startBtnTextObj.AddComponent<Text>();
         startBtnText.font = f;
-        startBtnText.text = "<b>PULL RIGHT TRIGGER TO START</b>";
+        startBtnText.text = "<b>BAŞLAMAK İÇİN SAĞ TETİĞİ ÇEKİN</b>";
         startBtnText.color = Color.white;
         startBtnText.fontSize = 26; // Telefonda okunsun diye büyütüldü
         startBtnText.alignment = TextAnchor.MiddleCenter;
@@ -336,7 +336,7 @@ public class PlanetManager : MonoBehaviour
         titleObj.transform.SetParent(bgObj.transform, false);
         UnityEngine.UI.Text titleText = titleObj.AddComponent<UnityEngine.UI.Text>();
         titleText.font = f;
-        titleText.text      = "<b><size=28>Explore the Solar Systems</size></b>";
+        titleText.text      = "<b><size=28>Güneş Sistemlerini Keşfet</size></b>";
         titleText.color      = Color.white;
         titleText.alignment = TextAnchor.MiddleCenter;
         UnityEngine.UI.ContentSizeFitter tsf = titleObj.AddComponent<UnityEngine.UI.ContentSizeFitter>();
@@ -373,7 +373,7 @@ public class PlanetManager : MonoBehaviour
         bridgeChecklistItemObj.transform.SetParent(bgObj.transform, false);
         bridgeChecklistText = bridgeChecklistItemObj.AddComponent<UnityEngine.UI.Text>();
         bridgeChecklistText.font = f;
-        bridgeChecklistText.text = "Find the Bridging Planet ( )";
+        bridgeChecklistText.text = "Köprü Gezegeni Bul ( )";
         bridgeChecklistText.color = new Color(0.5f, 0.5f, 0.5f, 1f); // Başlangıçta pasif gri
         bridgeChecklistText.fontSize = 23; // Font daha da küçültüldü
         UnityEngine.UI.ContentSizeFitter bcsf = bridgeChecklistItemObj.AddComponent<UnityEngine.UI.ContentSizeFitter>();
@@ -384,7 +384,7 @@ public class PlanetManager : MonoBehaviour
         gotoPortalTextObj.transform.SetParent(bgObj.transform, false);
         UnityEngine.UI.Text portalText = gotoPortalTextObj.AddComponent<UnityEngine.UI.Text>();
         portalText.font = f;
-        portalText.text = "<b><color=#00ff00>PORTAL OPENED!\nGo to the core.</color></b>";
+        portalText.text = "<b><color=#00ff00>PORTAL AÇILDI!\nÇekirdeğe ilerle.</color></b>";
         portalText.color = Color.white;
         portalText.fontSize = 34;
         portalText.alignment = TextAnchor.MiddleCenter;
@@ -427,7 +427,7 @@ public class PlanetManager : MonoBehaviour
     public void MarkBridgeVisited()
     {
         if (bridgeChecklistText != null && !bridgeChecklistText.text.Contains("(O)"))
-            bridgeChecklistText.text = "<color=#00ccff><b>Explore the bridge</b> (O)</color>";
+            bridgeChecklistText.text = "<color=#00ccff><b>Köprüyü keşfet</b> (O)</color>";
     }
 
     // ─────────────────────────────────────────────
@@ -479,8 +479,8 @@ public class PlanetManager : MonoBehaviour
 
         Text infoText = inBg.Find("InfoText").GetComponent<Text>();
         infoText.text = $"<b><size=28><color=#ffffff>{title}</color></size></b>\n\n" +
-                        $"<b><color=#00ccff>Explanation:</color></b>\n{explanation}\n\n" +
-                        $"<b><color=#00ccff>Keywords:</color></b>\n{keywords}\n\n" +
+                        $"<b><color=#00ccff>Açıklama:</color></b>\n{explanation}\n\n" +
+                        $"<b><color=#00ccff>Anahtar Kelimeler:</color></b>\n{keywords}\n\n" +
                         $"<b><color=#00ccff>Gravity Mass:</color></b> {mass} Tweets\n\n" +
                         $"<i><color=#aaaaaa>(Fly away to exit)</color></i>";
     }
