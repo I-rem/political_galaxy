@@ -22,7 +22,7 @@ public class PlanetOrbit : MonoBehaviour
 
     void Update()
     {
-        if (isPaused) return;
+        if (isPaused || GlobalPause) return;
 
         // RotateAround keeps the planet on its orbit path
         transform.RotateAround(centerPoint, orbitAxis, orbitSpeed * Time.deltaTime);
