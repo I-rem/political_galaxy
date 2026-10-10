@@ -44,7 +44,7 @@ public class VRFlightController : MonoBehaviour
         bool rightA = false, leftX = false;
         if (rightHand.isValid) rightHand.TryGetFeatureValue(CommonUsages.primaryButton, out rightA);
         if (leftHand.isValid) leftHand.TryGetFeatureValue(CommonUsages.primaryButton, out leftX);
-        primaryPressed = rightA || leftX || Input.GetButton("Fire1") || Input.GetButton("Submit");
+        primaryPressed = rightA || leftX;
 
         if (primaryPressed && !lastPrimaryButtonState)
         {
