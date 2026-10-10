@@ -12,7 +12,7 @@ public class VRFlightController : MonoBehaviour
 
     void Start()
     {
-        flySpeed = 200f; // Force override inspector
+        flySpeed = 60f; // Force override inspector
 
         // Oto balat! Trigger'a gerek yok.
         IntroManager[] intros = Resources.FindObjectsOfTypeAll<IntroManager>();
