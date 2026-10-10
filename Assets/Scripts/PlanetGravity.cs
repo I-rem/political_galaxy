@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using System.Collections.Generic;
@@ -116,20 +116,27 @@ public class PlanetGravity : MonoBehaviour
                     pullStrength = Mathf.Max(pullStrength, gravityForce * 0.1f);
                     pullStrength = Mathf.Clamp(pullStrength, 10f, gravityForce * 1.15f); 
 
-                    if (vrFlight != null)
+                    if (!PlanetOrbit.GlobalPause)
                     {
-                        vrFlight.transform.position += direction * pullStrength * Time.deltaTime;
+                        if (vrFlight != null)
+                        {
+                            vrFlight.transform.position += direction * pullStrength * Time.deltaTime;
+                        }
+                        else
+                        {
+                            playerTransform.position += direction * pullStrength * Time.deltaTime;
+                        }
+    
+                        if (GravityWindEffect.Instance != null)
+                        {
+                            GravityWindEffect.Instance.SetPullStrength(pullStrength, PlanetColor, transform.position);
+                        }
+                        
                     }
-                    else
+                    else if (GravityWindEffect.Instance != null)
                     {
-                        playerTransform.position += direction * pullStrength * Time.deltaTime;
+                        GravityWindEffect.Instance.StopWind();
                     }
-
-                    if (GravityWindEffect.Instance != null)
-                    {
-                        GravityWindEffect.Instance.SetPullStrength(pullStrength, PlanetColor, transform.position);
-                    }
-                    
                     if (isPlayerAtCore && distance > surfaceDistance + 25f)
                     {
                         ClosePanelAndResume();

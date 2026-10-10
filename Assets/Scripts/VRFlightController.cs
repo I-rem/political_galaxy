@@ -32,11 +32,16 @@ public class VRFlightController : MonoBehaviour
         Vector3 moveDirection = Vector3.zero;
         float currentFlySpeed = flySpeed;
 
-        // Grip Boost
-        float rightGrip = 0f;
-        if (rightHand.TryGetFeatureValue(CommonUsages.grip, out rightGrip) && rightGrip > 0.5f)
-        {
-            currentFlySpeed *= 3f;
+        // Grip Boost (Left or Right, Button or Axis)
+        bool boostPressed = false;
+        float gripVal = 0f;
+        bool gripBtn = false;
+        if (rightHand.TryGetFeatureValue(CommonUsages.grip, out gripVal) && gripVal > 0.5f) boostPressed = true;
+        if (rightHand.TryGetFeatureValue(CommonUsages.gripButton, out gripBtn) && gripBtn) boostPressed = true;
+        if (leftHand.TryGetFeatureValue(CommonUsages.grip, out gripVal) && gripVal > 0.5f) boostPressed = true;
+        if (leftHand.TryGetFeatureValue(CommonUsages.gripButton, out gripBtn) && gripBtn) boostPressed = true;
+        if (boostPressed) {
+            currentFlySpeed *= 3.5f;
         }
 
         // Freeze Planets Button (A/X)
